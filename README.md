@@ -63,6 +63,7 @@ Documentación detallada:
 - [`docs/politica.md`](docs/politica.md): umbrales, zonas, referencia, ventanas, reglas, captura y contratos.
 - [`docs/metricas.md`](docs/metricas.md): inventario G1–G7 con la definición M1–M5 de cada métrica base.
 - [`evidencias/referencia/justificacion-umbrales.md`](evidencias/referencia/justificacion-umbrales.md): elección de umbrales con observaciones.
+- [`docs/metricas-adicionales.md`](docs/metricas-adicionales.md): métricas adicionales M1–M3 (no base).
 - [`EXTRAS.md`](EXTRAS.md): adicionales reclamados.
 
 ## Instalación
@@ -117,7 +118,11 @@ python -m monitor.pipeline --scenario s2-cambio-sostenido
 python scripts/recalc_metrics.py --run-id <id-s2>
 python scripts/verify_s2.py --run-id <id-s2> --c1 <id-c1> --c2 <id-c2>
 
-# 9) Adicional F1: verificación del tablero contra los JSONL + recorrido en el navegador
+# 9) Adicionales M1–M3: métricas por ventana sobre las ejecuciones ya hechas + recálculo independiente
+python scripts/extra_metrics.py --run-id <id-referencia> --run-id <id-c1> --run-id <id-c2> --run-id <id-s1> --run-id <id-s2>
+python scripts/recalc_extra.py  --run-id <id-referencia> --run-id <id-c1> --run-id <id-c2> --run-id <id-s1> --run-id <id-s2>
+
+# 10) Adicional F1: verificación del tablero contra los JSONL + recorrido en el navegador
 python scripts/verify_dashboard.py --run-id <id-c2> --run-id <id-c1> --run-id <id-referencia>
 ```
 
