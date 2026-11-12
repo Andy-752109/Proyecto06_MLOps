@@ -10,6 +10,9 @@ informativos, y la regla `evidencia-insuficiente-v1`.
 | F1 | F (funcionalidad) | Tablero histórico por ventana: gráficas de las métricas base G1–G7 con comparación de ejecuciones | 15 | [`evidencias/tablero/verificacion.md`](evidencias/tablero/verificacion.md) |
 | S1 | S (escenario) | Interrupción del stream: corte de 15 s, diagnóstico por watchdog, reconexión con reintentos, recuperación y verificación posterior contra C1 | 10 | [`evidencias/escenarios/s1-interrupcion.md`](evidencias/escenarios/s1-interrupcion.md) |
 | S2 | S (escenario) | Cambio sostenido de confianza: normal → desenfocado → normal, con apertura y resolución de `cambio-sostenido-v1` | 8 | [`evidencias/escenarios/s2-cambio-sostenido.md`](evidencias/escenarios/s2-cambio-sostenido.md) |
+| M1 | M (métrica) | `m1_e2e_ms_p95`: p95 de la latencia de extremo a extremo por ventana (cola + inferencia + resto) | 5 | [`evidencias/metricas_adicionales/resumen.md`](evidencias/metricas_adicionales/resumen.md) |
+| M2 | M (métrica) | `m2_delivery_ratio`: frames entregados / esperados según `frame_index`, cruzada con watchdog y fuente | 8 | ídem |
+| M3 | M (métrica) | `m3_score_psi`: PSI de la distribución de puntuaciones de la ventana contra la referencia | 8 | ídem |
 
 ## F1 · Tablero histórico por ventana (`/tablero`, `/api/tablero`)
 
@@ -196,3 +199,28 @@ python scripts/recalc_metrics.py --run-id <id-s2>
 python scripts/verify_s2.py --run-id <id-s2> --c1 c1-normal-20261112T162444Z \
   --c2 c2-baja-confianza-20261112T162525Z
 ```
+
+## M1–M3 · Métricas adicionales por ventana
+
+Las definiciones M1–M5, los supuestos y los límites están en
+[`docs/metricas-adicionales.md`](docs/metricas-adicionales.md). Las tres métricas se calculan
+sobre las 5 ejecuciones (referencia, C1, C2, S1 y S2) a partir de los registros guardados,
+sin volver a correr nada. Código en el commit `381873b`.
+
+- **Resultados y expectativas:** [`evidencias/metricas_adicionales/resumen.md`](evidencias/metricas_adicionales/resumen.md)
+  da 13 expectativas y 0 fallas. Los valores por ventana están en `<run_id>.jsonl`.
+- **Recálculo independiente:** [`evidencias/metricas_adicionales/recalculo.md`](evidencias/metricas_adicionales/recalculo.md)
+  se hace con pandas/numpy, sin importar el módulo, y da 150 comprobaciones y 0 diferencias.
+- **Pruebas:** `tests/test_extra_metrics.py` (5 pruebas con datos sintéticos).
+
+| ID | Por qué es distinta de la base | Nivel solicitado y justificación |
+|---|---|---|
+| M1 `m1_e2e_ms_p95` | G1 base mide solo `model.predict`; M1 suma la espera en cola y el resto | **5**: cálculo por ventana con población (frames válidos), exclusiones (`error`, `source_gap`), `no_data` y recálculo. Además, en cada evento se cumple `e2e ≥ cola + inferencia`. Revela el arranque en frío (w000: 422–535 ms contra 43–51 ms) que G1 no muestra. No hay un caso de cambio controlado de latencia, así que no se pide 8 |
+| M2 `m2_delivery_ratio` | G2 base es el ritmo de procesamiento; M2 mide cuántos frames esperados llegaron | **8**: correlaciona tres registros independientes de la misma pérdida (saltos de `frame_index`, huecos del watchdog y descarte `outage` de la fuente). En el caso controlado S1 los tres dan 80 / 80 / 79.5 frames muestreados, y en C1, C2, S2 y la referencia la entrega es 1.0. Supuestos y límites documentados: atribución a la ventana de detección e índices consecutivos |
+| M3 `m3_score_psi` | G4 base es una proporción bajo un umbral; M3 compara la distribución completa con la referencia | **8**: compara distribuciones con la referencia. Supuestos (9 intervalos, piso 1e-4, mínimo 30 detecciones y ventana elegible) y límites (variación propia de la referencia 0.073–0.254, sin umbral ni alerta). Caso controlado S2: ventanas desenfocadas 4.06–7.34 contra normales 0.105–0.549 |
+
+**Sin doble conteo.**
+
+- Ninguna sustituye a la métrica base de su grupo.
+- El tablero F1 no las muestra; se entregan como datos y reporte propios.
+- Los escenarios S1 y S2 solo se usan como caso controlado y no se reclaman de nuevo.
