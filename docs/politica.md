@@ -149,3 +149,13 @@ declaran `watchdog` ni `fault_injection`, así que se comportan igual que antes.
   no se adjunta un frame anterior como si fuera de ese momento.
 - La falla y el watchdog forman parte de la fuente (`source_ref`), no de la configuración
   de monitoreo: S1 comparte `config_ref` con C1/C2 y su resultado es comparable con C1.
+
+## 9. Escenario adicional S2: cambio de entrada alineado
+
+Esta sección solo aplica a `s2-cambio-sostenido` (`config/scenarios.yaml → source.switch`).
+La fuente abre `vtest.avi` y `vtest_blur7.avi` y los lee en paralelo. Entre los frames 480 y
+719 entrega el frame del mismo índice del archivo desenfocado y fuera de ese tramo, el
+original. Los cambios quedan como `switch_on` / `switch_off` en `source_events`.
+El tramo coincide con las ventanas 2–7, así que ninguna ventana mezcla entradas y cada una
+se puede comparar con la ventana del mismo índice de C1 o de C2. La configuración, el modelo
+y la referencia son los de C1/C2.

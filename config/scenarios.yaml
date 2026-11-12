@@ -70,3 +70,24 @@ s1-interrupcion:
         at_frame: 500          # 10 s después del inicio del tramo
         duration_s: 15
         reconnect_every_s: 2
+
+s2-cambio-sostenido:
+  description: >-
+    S2 · Cambio sostenido de confianza con transición y recuperación: el tramo de C1 pasa a
+    la versión desenfocada (sigma=7) en los frames 480-719 y vuelve a la original.
+  evaluate_rules: true
+  source:
+    source_id: video-vtest-01
+    type: video_file
+    path: data/videos/vtest.avi
+    sha256: 45cddc9490be69345cbdab64ca583be65987e864ca408038e648db99e10516cf
+    playback: realtime
+    sample_every: 2
+    queue_maxsize: 4
+    start_frame: 400
+    end_frame: null
+    switch:                    # mismos frames, entrada degradada en un tramo
+      path: data/videos/vtest_blur7.avi
+      sha256: d625c3a994235c08b13e2b77e4bcced4c281f6529910576dfc4c67fd68ad1861
+      from_frame: 480          # inicio de la ventana 2 (20 frames procesados = 40 frames)
+      to_frame: 720            # exclusivo: fin de la ventana 7

@@ -22,7 +22,7 @@
 <td>{{ w.n_events }}</td><td>{{ w.n_dets }}</td><td>{{ w.low_prop|fmt }}</td>
 {% for m in metric_ids %}{% set mv = by_win.get(w.window_id, {}).get(m) %}<td>{{ mv.value|fmt(3) if mv else '—' }}{% if mv and mv.status != 'ok' %} <span class="muted">({{ mv.status }})</span>{% endif %}</td>{% endfor %}</tr>{% endfor %}
 </table></div>
-{% if source_events %}<h2 id="fuente">Eventos de conexión de la fuente</h2>
+{% if source_events %}<h2 id="fuente">Eventos de la fuente (conexión y cambios de entrada)</h2>
 <div class="wrap"><table><tr><th>#</th><th>Momento (UTC)</th><th>Tipo</th><th>Detalle</th></tr>
 {% for s in source_events %}<tr><td>{{ s.seq }}</td><td class="mono">{{ s.ts }}</td><td>{{ s.kind }}</td><td class="mono">{{ s.detail }}</td></tr>{% endfor %}
 </table></div>

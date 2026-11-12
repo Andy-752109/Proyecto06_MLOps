@@ -18,7 +18,7 @@ la evidencia.
 | Persistencia | SQLite (`evidencias/monitor.db`) + JSONL por ejecución + JPEG |
 | Portal | FastAPI + Jinja2: vistas de eventos y alertas, con detalle de evento, alerta, ventana, ejecución y configuración. Adicional: tablero histórico `/tablero` (ver [`EXTRAS.md`](EXTRAS.md)) |
 | Escenarios base | **C1** operación normal · **C2** baja confianza (desenfoque óptico real de la entrada) |
-| Escenario adicional | **S1** interrupción del stream con reconexión y recuperación (ver [`EXTRAS.md`](EXTRAS.md)) |
+| Escenarios adicionales | **S1** interrupción del stream con reconexión y recuperación · **S2** cambio sostenido normal → desenfocado → normal (ver [`EXTRAS.md`](EXTRAS.md)) |
 
 **Índice de evidencias y mapa de criterios:** [`evidencias/indice.md`](evidencias/indice.md)
 
@@ -48,7 +48,7 @@ la evidencia.
 
 | Módulo | Responsabilidad |
 |---|---|
-| `src/monitor/source.py` | Reproduce el video como stream y cuenta lecturas, fallos y descartes. En S1: corte inyectado, reconexión y watchdog de huecos |
+| `src/monitor/source.py` | Reproduce el video como stream y cuenta lecturas, fallos y descartes. En S1: corte inyectado, reconexión y watchdog de huecos. En S2: cambio a un archivo alineado en un tramo |
 | `src/monitor/detector.py` | Carga el modelo, verifica su SHA-256 y mide el tiempo de inferencia |
 | `src/monitor/policy.py` | Asigna las tres zonas y resume cada frame |
 | `src/monitor/rules.py` | Estado de la ventana, reglas y ciclo de vida de las alertas |
@@ -112,7 +112,12 @@ python -m monitor.pipeline --scenario s1-interrupcion
 python scripts/recalc_metrics.py --run-id <id-s1>
 python scripts/verify_s1.py --run-id <id-s1> --c1 <id-c1>
 
-# 8) Adicional F1: verificación del tablero contra los JSONL + recorrido en el navegador
+# 8) Adicional S2: cambio sostenido normal → desenfocado → normal (~40 s)
+python -m monitor.pipeline --scenario s2-cambio-sostenido
+python scripts/recalc_metrics.py --run-id <id-s2>
+python scripts/verify_s2.py --run-id <id-s2> --c1 <id-c1> --c2 <id-c2>
+
+# 9) Adicional F1: verificación del tablero contra los JSONL + recorrido en el navegador
 python scripts/verify_dashboard.py --run-id <id-c2> --run-id <id-c1> --run-id <id-referencia>
 ```
 

@@ -77,6 +77,9 @@ class Monitor:
         src_sha = file_sha256(src_path)
         if sc["source"].get("sha256") and src_sha != sc["source"]["sha256"]:
             sys.exit(f"SHA-256 de la fuente no coincide: {src_sha}")
+        sw = sc["source"].get("switch")
+        if sw and file_sha256(ROOT / sw["path"]) != sw["sha256"]:
+            sys.exit(f"SHA-256 de {sw['path']} no coincide")
         commit, dirty = git_info()
         snap = config_snapshot(cfg)
         self.con.execute("INSERT OR IGNORE INTO configs VALUES (?,?,?)",

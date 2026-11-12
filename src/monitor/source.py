@@ -10,6 +10,9 @@ Opcionalmente (solo escenarios adicionales):
   `duration_s`. Reintenta cada `reconnect_every_s`; los intentos dentro del corte fallan.
   Al reconectar continúa en la posición "en vivo": los frames emitidos durante el corte
   se pierden (descarte `outage`). Cada transición queda en `stats.events`.
+- `switch`: entre `from_frame` y `to_frame` (exclusivo) entrega el frame del mismo índice
+  leído de otro archivo alineado (p. ej. la versión desenfocada). Ambos archivos se leen
+  en paralelo para mantenerse sincronizados; cada cambio queda en `stats.events`.
 - `watchdog.gap_after_s`: `frames()` entrega un `SourceGap` por cada frame esperado
   (cada sample_every/fps s) que no llegó, una vez que el silencio supera ese tiempo.
 """
@@ -65,6 +68,7 @@ _END = object()
 class VideoStreamSource:
     def __init__(self, src_cfg: dict, root: Path):
         self.cfg = src_cfg
+        self.root = root
         self.path = root / src_cfg["path"]
         if not self.path.exists():
             raise FileNotFoundError(f"fuente no encontrada: {self.path} (ejecuta scripts/prepare_inputs.py)")
@@ -144,6 +148,12 @@ class VideoStreamSource:
             cap.set(cv2.CAP_PROP_POS_FRAMES, start)
         idx = start
         outage_at = ((self.cfg.get("fault_injection") or {}).get("outage") or {}).get("at_frame")
+        sw = self.cfg.get("switch")
+        alt, in_alt = None, False
+        if sw:
+            alt = cv2.VideoCapture(str(self.root / sw["path"]))
+            if start:
+                alt.set(cv2.CAP_PROP_POS_FRAMES, start)
         t0 = time.perf_counter()
         try:
             while not self._stop.is_set() and (end is None or idx < end):
@@ -156,6 +166,15 @@ class VideoStreamSource:
                     if delay > 0:
                         time.sleep(delay)
                 ok, img = cap.read()
+                if alt is not None:
+                    ok_alt, img_alt = alt.read()
+                    want = sw["from_frame"] <= idx < sw["to_frame"]
+                    if want != in_alt:
+                        in_alt = want
+                        self.log("switch_on" if want else "switch_off", frame_index=idx,
+                                 path=sw["path"] if want else self.cfg["path"])
+                    if want:
+                        ok, img = ok_alt, img_alt
                 now = time.perf_counter()
                 if not ok:
                     # fin del archivo o fallo de lectura/decodificación
@@ -180,4 +199,6 @@ class VideoStreamSource:
                 idx += 1
         finally:
             cap.release()
+            if alt is not None:
+                alt.release()
             self.q.put(_END)
