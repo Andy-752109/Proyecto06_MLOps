@@ -1,25 +1,32 @@
 {% extends "base.html" %}
-{% block title %}{{ w.window_id }}{% endblock %}
+{% block title %}Ventana {{ w.window_id|short }}{% endblock %}
 {% block content %}
-<h1>Ventana <span class="mono">{{ w.window_id }}</span> <span class="badge">{{ w.state }}</span></h1>
-<div class="card"><dl class="kv">
+<div class="crumbs"><a href="/ejecuciones/{{ w.run_id }}">{{ w.run_id|run_label }}</a><span>/</span>{{ w.window_id|short }}</div>
+<h1>Ventana {{ w.window_id|short }} <span class="badge w-{{ w.state }}" title="{{ w.state }}">{{ w.state|es }}</span></h1>
+<p class="lead mono">{{ w.window_id }}</p>
+<div class="kpis">
+  <div class="kpi"><div class="l">Eventos</div><div class="v">{{ w.n_events }}</div><div class="s">ok {{ w.n_ok }} · sin det. {{ w.n_no_detections }} · error {{ w.n_errors }}</div></div>
+  <div class="kpi"><div class="l">Frames válidos</div><div class="v">{{ w.n_valid }}</div><div class="s">con inferencia completada</div></div>
+  <div class="kpi"><div class="l">Detecciones</div><div class="v">{{ w.n_dets }}</div><div class="s">baja {{ w.n_low }} · duda {{ w.n_doubt }} · acept. {{ w.n_accepted }}</div></div>
+  <div class="kpi"><div class="l">low_prop</div><div class="v">{{ w.low_prop|fmt }}</div><div class="s">bajas / detecciones</div></div>
+</div>
+<div class="card" style="margin-top:12px"><dl class="kv">
 <dt>Ejecución</dt><dd><a href="/ejecuciones/{{ w.run_id }}">{{ w.run_id }}</a></dd>
 <dt>Intervalo</dt><dd class="mono">{{ w.start_at }} → {{ w.end_at }} (seq {{ w.first_seq }}–{{ w.last_seq }})</dd>
-<dt>Eventos</dt><dd>{{ w.n_events }} (ok {{ w.n_ok }}, sin detecciones {{ w.n_no_detections }}, error {{ w.n_errors }}; válidos {{ w.n_valid }})</dd>
-<dt>Detecciones</dt><dd>{{ w.n_dets }} (baja {{ w.n_low }}, duda {{ w.n_doubt }}, aceptada {{ w.n_accepted }})</dd>
-<dt>low_prop</dt><dd>{{ w.low_prop|fmt }}</dd>
 <dt>Configuración</dt><dd><a class="mono" href="/config/{{ w.config_ref }}">{{ w.config_ref }}</a></dd>
+<dt>Eventos</dt><dd><a href="/eventos?run_id={{ w.run_id }}&window={{ w.idx }}">ver los {{ w.n_events }} eventos de esta ventana en /eventos</a></dd>
 </dl></div>
 <h2>Métricas base de la ventana</h2>
-<div class="wrap"><table><tr><th>Grupo</th><th>Métrica</th><th>Valor</th><th>Unidad</th><th>n</th><th>Estado</th><th>Detalle</th></tr>
-{% for m in metrics %}<tr><td>{{ m.grp }}</td><td class="mono">{{ m.metric_id }}</td><td>{{ m.value|fmt(4) }}</td><td>{{ m.unit }}</td><td>{{ m.n_obs }}</td><td>{{ m.status }}</td><td class="mono">{{ m.detail }}</td></tr>{% endfor %}</table></div>
+<div class="wrap"><table><tr><th>Grupo</th><th>Métrica</th><th class="num">Valor</th><th>Unidad</th><th class="num">n</th><th>Estado</th><th>Detalle</th></tr>
+{% for m in metrics %}<tr><td>{{ m.grp }}</td><td class="mono">{{ m.metric_id }}</td><td class="num">{{ m.value|fmt(4) }}</td><td>{{ m.unit }}</td><td class="num">{{ m.n_obs }}</td><td>{{ m.status }}</td><td class="mono" style="white-space:normal;overflow-wrap:anywhere">{{ m.detail }}</td></tr>{% endfor %}</table></div>
 <h2>Evaluación de reglas</h2>
 {% if not evals %}<div class="empty">Reglas no evaluadas en esta ejecución (referencia).</div>{% else %}
 <div class="wrap"><table><tr><th>Regla</th><th>Resultado</th><th>Observado</th><th>Alerta</th></tr>
-{% for r in evals %}<tr><td>{{ r.rule_id }}</td><td>{{ r.outcome }}</td><td class="mono">{{ r.observed }}</td>
-<td>{% if r.alert_id %}<a href="/alertas/{{ r.alert_id }}">{{ r.alert_id }}</a>{% else %}—{% endif %}</td></tr>{% endfor %}</table></div>{% endif %}
-<h2>Eventos</h2>
-<div class="wrap"><table><tr><th>Evento</th><th>Estado</th><th>Det.</th><th>Baja / duda / acept.</th><th>Captura</th></tr>
-{% for e in events %}<tr><td><a class="mono" href="/eventos/{{ e.event_id }}">{{ e.event_id }}</a></td><td>{{ e.status }}</td><td>{{ e.n_detections }}</td>
-<td>{{ e.n_low }} / {{ e.n_doubt }} / {{ e.n_accepted }}</td><td>{{ e.capture_reason or '—' }}</td></tr>{% endfor %}</table></div>
+{% for r in evals %}<tr><td>{{ r.rule_id }}</td><td><b>{{ r.outcome }}</b></td><td class="mono" style="white-space:normal;overflow-wrap:anywhere">{{ r.observed }}</td>
+<td>{% if r.alert_id %}<a href="/alertas/{{ r.alert_id }}">{{ r.alert_id|short }}</a>{% else %}—{% endif %}</td></tr>{% endfor %}</table></div>{% endif %}
+<h2>Eventos <span class="count">{{ events|length }}</span></h2>
+<div class="wrap"><table><tr><th>Evento</th><th class="num">Frame</th><th>Estado</th><th class="num">Det.</th><th>Baja / duda / acept.</th><th class="num">Máx. s</th><th>Captura</th></tr>
+{% for e in events %}<tr><td><a class="mono" href="/eventos/{{ e.event_id }}" title="{{ e.event_id }}">{{ e.event_id|short }}</a></td><td class="num mono">{{ e.frame_index if e.frame_index is not none else '—' }}</td>
+<td><span class="badge st-{{ e.status }}">{{ e.status|es }}</span></td><td class="num">{{ e.n_detections }}</td>
+<td>{{ e.n_low }} / {{ e.n_doubt }} / {{ e.n_accepted }}</td><td class="num">{{ e.max_score|fmt }}</td><td>{{ e.capture_reason or '—' }}</td></tr>{% endfor %}</table></div>
 {% endblock %}

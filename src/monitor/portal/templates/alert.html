@@ -1,41 +1,56 @@
 {% extends "base.html" %}
-{% block title %}{{ a.alert_id }}{% endblock %}
+{% block title %}Alerta {{ a.alert_id|short }}{% endblock %}
 {% block content %}
-<h1>Alerta <span class="mono">{{ a.alert_id }}</span> <span class="badge s-{{ a.severity }}">{{ a.severity }}</span> <span class="badge st-{{ a.status }}">{{ a.status }}</span></h1>
-<div class="grid" style="grid-template-columns:1fr 1fr">
+<div class="crumbs"><a href="/alertas">Alertas</a><span>/</span><a href="/ejecuciones/{{ a.run_id }}">{{ a.run_id|run_label }}</a><span>/</span>{{ a.alert_id|short }}</div>
+<h1>{{ a.rule_id }} <span class="badge s-{{ a.severity }}" title="{{ a.severity }}">{{ a.severity|es }}</span> <span class="badge st-{{ a.status }}" title="{{ a.status }}">{{ a.status|es }}</span></h1>
+<p class="lead mono">{{ a.alert_id }}</p>
+<div class="split">
 <div class="card"><dl class="kv">
-  <dt>Regla</dt><dd><b>{{ a.rule_id }}</b> — {{ a.condition }}</dd>
-  <dt>Abierta</dt><dd class="mono">{{ a.opened_at }}</dd>
-  <dt>Resuelta</dt><dd class="mono">{{ a.resolved_at or 'sigue abierta al final de la ejecución' }}</dd>
-  <dt>Motivo</dt><dd>{{ a.reason }}</dd>
+  <dt>Motivo</dt><dd><b>{{ a.reason }}</b></dd>
+  <dt>Condición</dt><dd>{{ a.condition }}</dd>
   <dt>Acción sugerida</dt><dd>{{ a.suggested_action }}</dd>
+  <dt>Abierta</dt><dd class="mono">{{ a.opened_at|when }}</dd>
+  <dt>Resuelta</dt><dd class="mono">{{ a.resolved_at|when if a.resolved_at else 'sigue abierta al final de la ejecución' }}</dd>
   <dt>Ejecución</dt><dd><a href="/ejecuciones/{{ a.run_id }}">{{ a.run_id }}</a></dd>
   <dt>Fuente / modelo</dt><dd class="mono">{{ a.source_id }} · {{ a.model_ref }}</dd>
   <dt>Configuración</dt><dd><a class="mono" href="/config/{{ a.config_ref }}">{{ a.config_ref }}</a></dd>
 </dl></div>
 <div class="card">
-{% if rule %}<dl class="kv"><dt>Métrica</dt><dd>{{ rule.metric }}</dd><dt>Umbral</dt><dd>{{ rule.threshold }}</dd>
-<dt>Persistencia</dt><dd>{{ rule.persistence_windows }} ventana(s) elegible(s)</dd><dt>Datos insuficientes</dt>
-<dd>las ventanas <i>insufficient</i> no abren, no extienden ni resuelven alertas de confianza</dd></dl>{% endif %}
+{% if rule %}<dl class="kv"><dt>Métrica</dt><dd class="mono">{{ rule.metric }}</dd><dt>Umbral</dt><dd>{{ rule.threshold }}</dd>
+<dt>Persistencia</dt><dd>{{ rule.persistence_windows }} ventana(s) {{ 'insuficientes' if rule.metric == 'window_state' else 'elegibles' }} consecutivas</dd><dt>Datos insuficientes</dt>
+<dd>las ventanas <i>insuficientes</i> no abren, no extienden ni resuelven alertas de confianza</dd></dl>{% endif %}
+<div style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap;font-size:13px">
+  <a href="/eventos?run_id={{ a.run_id }}&in_alert=true">Eventos de alertas de esta ejecución</a>
+  <a href="/tablero?run_id={{ a.run_id }}">Ver en el tablero</a>
+  <a href="/api/alertas/{{ a.alert_id }}">JSON de la alerta</a></div>
 </div></div>
-<h2>Ventanas que originan y sostienen la alerta</h2>
-<div class="wrap"><table><tr><th>Ventana</th><th>Estado</th><th>Frames válidos</th><th>Detecciones</th><th>Bajas</th><th>low_prop</th><th>Referencia</th><th>Delta</th></tr>
-{% for o in a.observed.windows %}<tr><td><a class="mono" href="/ventanas/{{ o.window_id }}">{{ o.window_id }}</a></td><td>{{ o.state }}</td>
-<td>{{ o.n_valid }}</td><td>{{ o.n_dets }}</td><td>{{ o.n_low }}</td><td>{{ o.low_prop|fmt }}</td><td>{{ o.ref_low_prop|fmt }}</td><td>{{ o.delta|fmt }}</td></tr>{% endfor %}
-{% if a.observed.resolved_by %}{% set o = a.observed.resolved_by %}<tr><td><a class="mono" href="/ventanas/{{ o.window_id }}">{{ o.window_id }}</a> (resuelve)</td><td>{{ o.state }}</td>
-<td>{{ o.n_valid }}</td><td>{{ o.n_dets }}</td><td>{{ o.n_low }}</td><td>{{ o.low_prop|fmt }}</td><td>{{ o.ref_low_prop|fmt }}</td><td>{{ o.delta|fmt }}</td></tr>{% endif %}
+
+<h2>Ventanas que originan y sostienen la alerta <span class="count">{{ a.observed.windows|length }}{{ ' + la que resuelve' if a.observed.resolved_by }}</span></h2>
+<div class="wrap"><table><tr><th>Ventana</th><th>Papel</th><th>Estado</th><th class="num">Frames válidos</th><th class="num">Detecciones</th><th class="num">Bajas</th><th class="num">low_prop</th><th class="num">Referencia</th><th class="num">Delta</th></tr>
+{% for o in a.observed.windows %}<tr><td><a class="mono" href="/ventanas/{{ o.window_id }}" title="{{ o.window_id }}">{{ o.window_id|short }}</a></td>
+{% set need = rule.persistence_windows if rule else 1 %}
+<td>{{ 'acumula' if loop.index < need else ('<b>abre</b>'|safe if loop.index == need else 'sostiene') }}</td>
+<td><span class="badge w-{{ o.state }}">{{ o.state|es }}</span></td>
+<td class="num">{{ o.n_valid }}</td><td class="num">{{ o.n_dets }}</td><td class="num">{{ o.n_low }}</td><td class="num">{{ o.low_prop|fmt }}</td><td class="num">{{ o.ref_low_prop|fmt }}</td><td class="num">{{ o.delta|fmt }}</td></tr>{% endfor %}
+{% if a.observed.resolved_by %}{% set o = a.observed.resolved_by %}<tr><td><a class="mono" href="/ventanas/{{ o.window_id }}" title="{{ o.window_id }}">{{ o.window_id|short }}</a></td><td><b>resuelve</b></td>
+<td><span class="badge w-{{ o.state }}">{{ o.state|es }}</span></td>
+<td class="num">{{ o.n_valid }}</td><td class="num">{{ o.n_dets }}</td><td class="num">{{ o.n_low }}</td><td class="num">{{ o.low_prop|fmt }}</td><td class="num">{{ o.ref_low_prop|fmt }}</td><td class="num">{{ o.delta|fmt }}</td></tr>{% endif %}
 </table></div>
-<h2>Capturas vinculadas ({{ captured|length }})</h2>
+
+<h2>Capturas vinculadas <span class="count">{{ captured|length }}</span></h2>
 {% if not captured %}<div class="empty">Sin capturas vinculadas.</div>{% else %}
 <p>Revisión manual: <b>{{ review_summary.reviewed }} de {{ captured|length }}</b> revisadas
 {%- for k, n in review_summary.by_label.items() if n %}{{ ' · ' if loop.first else ', ' }}{{ k }} {{ n }}{% endfor %}.
 <a href="/capturas?run_id={{ a.run_id }}&review=sin_revisar">Revisar pendientes</a></p>
-<div class="grid">{% for e in captured %}{% set rv = reviews.get(e.event_id) %}<div class="card"><a href="/capturas/{{ e.event_id }}"><img class="thumb" loading="lazy" src="/evidencia/{{ e.image_ref }}" alt="{{ e.event_id }}"></a>
-<div class="mono">{{ e.event_id.split('-')[-1] }} · {{ e.capture_reason }}</div><div>máx {{ e.max_score|fmt }} · baja {{ e.n_low }}/{{ e.n_detections }}</div>
-<div>{% if rv %}<span class="badge rv">{{ rv.label }}</span> <span class="muted">{{ rv.reviewer }}</span>{% else %}<span class="muted">sin revisar</span>{% endif %}</div></div>{% endfor %}</div>{% endif %}
-<h2>Eventos de origen ({{ events|length }})</h2>
-<div class="wrap"><table><tr><th>Evento</th><th>Estado</th><th>Det.</th><th>Baja / duda / acept.</th><th>Máx. s</th><th>Captura</th></tr>
-{% for e in events %}<tr><td><a class="mono" href="/eventos/{{ e.event_id }}">{{ e.event_id }}</a></td><td>{{ e.status }}</td><td>{{ e.n_detections }}</td>
-<td>{{ e.n_low }} / {{ e.n_doubt }} / {{ e.n_accepted }}</td><td>{{ e.max_score|fmt }}</td><td>{{ e.capture_reason or '—' }}</td></tr>{% endfor %}</table></div>
-<p><a href="/api/alertas/{{ a.alert_id }}">JSON de la alerta</a></p>
+<div class="gallery">{% for e in captured %}{% set rv = reviews.get(e.event_id) %}<div class="card"><a href="/capturas/{{ e.event_id }}"><img class="thumb" loading="lazy" src="/evidencia/{{ e.image_ref }}" alt="{{ e.event_id }}"></a>
+<div class="meta"><div><a class="mono" href="/eventos/{{ e.event_id }}">{{ e.event_id|short }}</a> · {{ e.capture_reason }} {% if e.frame_zone %}<span class="badge z-{{ e.frame_zone }}">{{ e.frame_zone|es }}</span>{% elif e.status != 'ok' %}<span class="badge st-{{ e.status }}">{{ e.status|es }}</span>{% endif %}</div>
+<div class="muted">máx {{ e.max_score|fmt }} · baja {{ e.n_low }}/{{ e.n_detections }}</div>
+<div>{% if rv %}<span class="badge rv">{{ rv.label }}</span> <span class="muted">{{ rv.reviewer }}</span>{% else %}<span class="faint">sin revisar</span>{% endif %}</div></div></div>{% endfor %}</div>{% endif %}
+
+<h2>Eventos de origen <span class="count">{{ events|length }}</span></h2>
+<details class="more"><summary>Mostrar los {{ events|length }} eventos</summary>
+<div class="wrap"><table><tr><th>Evento</th><th>Ventana</th><th>Estado</th><th class="num">Det.</th><th>Baja / duda / acept.</th><th class="num">Máx. s</th><th>Captura</th></tr>
+{% for e in events %}<tr><td><a class="mono" href="/eventos/{{ e.event_id }}" title="{{ e.event_id }}">{{ e.event_id|short }}</a></td><td class="mono">{{ e.window_id|short }}</td>
+<td><span class="badge st-{{ e.status }}">{{ e.status|es }}</span></td><td class="num">{{ e.n_detections }}</td>
+<td>{{ e.n_low }} / {{ e.n_doubt }} / {{ e.n_accepted }}</td><td class="num">{{ e.max_score|fmt }}</td><td>{{ e.capture_reason or '—' }}</td></tr>{% endfor %}</table></div></details>
 {% endblock %}

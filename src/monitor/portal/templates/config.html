@@ -2,6 +2,6 @@
 {% block title %}{{ c.config_ref }}{% endblock %}
 {% block content %}
 <h1>Configuración <span class="mono">{{ c.config_ref }}</span></h1>
-<p class="muted">Registrada {{ c.created_at }}. El identificador es el SHA-256 de este contenido canónico.</p>
+<p class="lead">Registrada {{ c.created_at|when }} UTC. El identificador es el SHA-256 de este contenido canónico (secciones model, policy, windows, reference, alerts y capture).</p>
 <pre>{{ c.snapshot|tojson_pretty }}</pre>
 {% endblock %}

@@ -1,33 +1,35 @@
 {% extends "base.html" %}
 {% from "_frame.html" import frame %}
-{% block title %}Revisión {{ ev.event_id }}{% endblock %}
+{% block title %}Revisión {{ ev.event_id|short }}{% endblock %}
 {% block content %}
-<h1>Revisión de captura <span class="mono">{{ ev.event_id }}</span></h1>
+<div class="crumbs"><a href="/capturas?run_id={{ ev.run_id }}">Capturas</a><span>/</span>{{ ev.run_id|run_label }}<span>/</span>{{ ev.event_id|short }}</div>
+<h1>Revisión de captura {{ ev.event_id|short }}{% if ev.frame_zone %} <span class="badge z-{{ ev.frame_zone }}">{{ ev.frame_zone|es }}</span>{% elif ev.status != 'ok' %} <span class="badge st-{{ ev.status }}">{{ ev.status|es }}</span>{% endif %}</h1>
+<p class="lead mono">{{ ev.event_id }}</p>
 {% if saved %}<div class="flash ok">Revisión guardada.</div>{% endif %}
 {% if error %}<div class="flash err">No se guardó: {{ error }}</div>{% endif %}
-<div class="grid" style="grid-template-columns:minmax(300px,2fr) minmax(280px,1fr)">
+<div class="split">
 <div class="card">
 {% if ev.image_ref %}{{ frame(ev) }}
-<p class="muted">Motivo de captura <b>{{ ev.capture_reason }}</b> · {{ ev.n_detections }} detecciones (baja {{ ev.n_low }}, duda {{ ev.n_doubt }}, aceptada {{ ev.n_accepted }}) ·
+<p class="muted" style="margin:8px 0 0">Motivo de captura <b>{{ ev.capture_reason }}</b> · {{ ev.n_detections }} detecciones (baja {{ ev.n_low }}, duda {{ ev.n_doubt }}, aceptada {{ ev.n_accepted }}){% if ev.error %} · <span class="mono">{{ ev.error }}</span>{% endif %} ·
 <a href="/eventos/{{ ev.event_id }}">evento completo</a> · <a href="/ventanas/{{ ev.window_id }}">ventana</a></p>
 {% else %}<div class="empty">Este evento no tiene captura: no hay imagen que revisar.</div>{% endif %}
 </div>
 <div class="card">
 <form method="post" action="/capturas/{{ ev.event_id }}/revision" class="review">
 <fieldset style="border:0;padding:0;margin:0"><legend><b>Etiqueta</b></legend>
-{% for k, desc in labels.items() %}<label style="display:block;margin:4px 0"><input type="radio" name="label" value="{{ k }}"> <b>{{ k }}</b> <span class="muted">— {{ desc }}</span></label>{% endfor %}
+{% for k, desc in labels.items() %}<label style="display:flex;gap:8px;align-items:flex-start;margin:6px 0;cursor:pointer"><input type="radio" name="label" value="{{ k }}" style="margin-top:3px"> <span><b>{{ k }}</b> <span class="muted">— {{ desc }}</span></span></label>{% endfor %}
 </fieldset>
-<label style="display:block;margin-top:8px">Nota (opcional, máx. 500)<br><textarea name="note" rows="3" maxlength="500" style="width:100%"></textarea></label>
-<label style="display:block;margin-top:8px">Revisa<br><input name="reviewer" style="width:100%" required></label>
-<p><button name="siguiente" value="" type="submit">Guardar</button>
+<label style="display:block;margin-top:10px;font-size:12px;color:var(--muted)">Nota (opcional, máx. 500)<br><textarea name="note" rows="3" maxlength="500" style="width:100%"></textarea></label>
+<label style="display:block;margin-top:8px;font-size:12px;color:var(--muted)">Revisa<br><input name="reviewer" style="width:100%" required></label>
+<p style="display:flex;gap:8px;flex-wrap:wrap"><button name="siguiente" value="" type="submit" class="ghost">Guardar</button>
 <button name="siguiente" value="1" type="submit">Guardar y siguiente sin revisar</button></p>
 </form>
-<p class="muted">Alertas vinculadas: {% for a in alerts %}<a href="/alertas/{{ a.alert_id }}">{{ a.alert_id.split('-')[-1] }}</a> ({{ a.rule_id }}){{ ', ' if not loop.last }}{% else %}ninguna{% endfor %}.
-{% if next %}Siguiente sin revisar de esta ejecución: <a href="/capturas/{{ next }}">{{ next.split('-')[-1] }}</a>.{% else %}No quedan capturas sin revisar en esta ejecución.{% endif %}</p>
+<p class="muted" style="font-size:13px">Alertas vinculadas: {% for a in alerts %}<a href="/alertas/{{ a.alert_id }}">{{ a.alert_id|short }}</a> ({{ a.rule_id }}){{ ', ' if not loop.last }}{% else %}ninguna{% endfor %}.
+{% if next %}Siguiente sin revisar de esta ejecución: <a href="/capturas/{{ next }}">{{ next|short }}</a>.{% else %}No quedan capturas sin revisar en esta ejecución.{% endif %}</p>
 </div></div>
-<h2>Historial de revisiones ({{ history|length }})</h2>
+<h2>Historial de revisiones <span class="count">{{ history|length }}</span></h2>
 {% if not history %}<div class="empty">Sin revisiones todavía.</div>{% else %}
 <div class="wrap"><table><tr><th>#</th><th>Momento (UTC)</th><th>Etiqueta</th><th>Revisa</th><th>Nota</th><th>Alertas en ese momento</th></tr>
 {% for r in history %}<tr><td>{{ r.review_id }}{% if loop.first %} <span class="muted">(vigente)</span>{% endif %}</td><td class="mono">{{ r.created_at }}</td>
-<td><span class="badge rv">{{ r.label }}</span></td><td>{{ r.reviewer }}</td><td>{{ r.note or '—' }}</td><td class="mono">{% for a in r.alert_ids %}<a href="/alertas/{{ a }}">{{ a.split('-')[-1] }}</a>{{ ', ' if not loop.last }}{% else %}—{% endfor %}</td></tr>{% endfor %}</table></div>{% endif %}
+<td><span class="badge rv">{{ r.label }}</span></td><td>{{ r.reviewer }}</td><td>{{ r.note or '—' }}</td><td class="mono">{% for a in r.alert_ids %}<a href="/alertas/{{ a }}">{{ a|short }}</a>{{ ', ' if not loop.last }}{% else %}—{% endfor %}</td></tr>{% endfor %}</table></div>{% endif %}
 {% endblock %}

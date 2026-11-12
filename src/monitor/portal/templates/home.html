@@ -1,23 +1,66 @@
 {% extends "base.html" %}
+{% block title %}Inicio{% endblock %}
 {% block content %}
-<h1>Ejecuciones</h1>
-{% if not runs %}<div class="empty">Sin ejecuciones registradas.</div>{% else %}
-<div class="wrap"><table>
-<tr><th>Ejecución</th><th>Escenario</th><th>Inicio (UTC)</th><th>Fuente</th><th>Modelo</th><th>Config</th>
-<th>Eventos</th><th>Detecciones</th><th>low_prop</th><th>Alertas</th><th>Commit</th></tr>
-{% for r in runs %}{% set s = r.summary or {} %}
-<tr><td><a href="/ejecuciones/{{ r.run_id }}">{{ r.run_id }}</a></td><td>{{ r.scenario }}</td>
-<td class="mono">{{ r.started_at }}</td><td>{{ r.source_id }}</td><td class="mono">{{ r.model_ref }}</td>
-<td><a class="mono" href="/config/{{ r.config_ref }}">{{ r.config_ref }}</a></td>
-<td><a href="/eventos?run_id={{ r.run_id }}">{{ s.events }}</a></td><td>{{ s.detections }}</td>
-<td>{{ s.low_prop_run|fmt }}</td><td><a href="/alertas?run_id={{ r.run_id }}">{{ r.n_alerts }}</a></td>
-<td class="mono">{{ (r.git_commit or '')[:8] }}{% if r.git_dirty %}*{% endif %}</td></tr>
-{% endfor %}</table></div>{% endif %}
-<h2>Últimas alertas</h2>
-{% if not latest %}<div class="empty">Sin alertas.</div>{% else %}
-<div class="wrap"><table><tr><th>Alerta</th><th>Momento</th><th>Regla</th><th>Severidad</th><th>Estado</th><th>Motivo</th></tr>
-{% for a in latest %}<tr><td><a href="/alertas/{{ a.alert_id }}">{{ a.alert_id }}</a></td><td class="mono">{{ a.opened_at }}</td>
-<td>{{ a.rule_id }}</td><td><span class="badge s-{{ a.severity }}">{{ a.severity }}</span></td>
-<td><span class="badge st-{{ a.status }}">{{ a.status }}</span></td><td>{{ a.reason }}</td></tr>{% endfor %}
-</table></div>{% endif %}
+<style>
+.runs { display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:14px; }
+.run h3 { margin:0; font-size:15px; display:flex; justify-content:space-between; gap:8px; align-items:baseline; }
+.run .desc { color:var(--muted); font-size:13px; margin:4px 0 10px; min-height:39px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.run .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin:10px 0; }
+.run .stats div { background:#f7f8fa; border-radius:7px; padding:5px 8px; }
+.run .stats b { display:block; font-size:16px; font-variant-numeric:tabular-nums; }
+.run .stats span { font-size:11px; color:var(--muted); }
+.run .links { display:flex; gap:14px; flex-wrap:wrap; font-size:13px; border-top:1px solid var(--line2); padding-top:9px; margin-top:4px; }
+.spark { display:block; width:100%; height:auto; }
+.spark .thr { stroke:var(--low); stroke-dasharray:3 3; stroke-width:1; }
+.spark polyline { fill:none; stroke:var(--accent); stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+.spark circle.ok { fill:var(--accent); stroke:#fff; stroke-width:1.5; }
+.spark circle.ins { fill:#fff; stroke:#8a94a3; stroke-width:1.3; }
+.spark-legend { font-size:11px; color:var(--faint); display:flex; justify-content:space-between; }
+.alerts-list { display:flex; flex-direction:column; }
+.alerts-list a.row { display:grid; grid-template-columns:auto auto 1fr auto; gap:10px; align-items:center; padding:9px 12px; border-bottom:1px solid var(--line2); color:var(--fg); }
+.alerts-list a.row:last-child { border-bottom:0; }
+.alerts-list a.row:hover { background:#f8fafd; text-decoration:none; }
+.alerts-list .why { color:var(--muted); font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+@media (max-width:700px) { .alerts-list a.row { grid-template-columns:auto 1fr; } .alerts-list .why { grid-column:1 / -1; white-space:normal; } }
+</style>
+<h1>Resumen del monitoreo</h1>
+<p class="lead">Detector de personas YOLOv8n sobre video tratado como stream. Cada ejecución registra eventos por frame, ventanas de 20 eventos, métricas G1–G7 y alertas. Hora en UTC.</p>
+
+<div class="kpis">
+  <div class="kpi"><div class="l">Ejecuciones</div><div class="v">{{ kpis.runs }}</div><div class="s">{{ kpis.windows }} ventanas</div></div>
+  <div class="kpi"><div class="l">Eventos</div><div class="v">{{ "{:,}".format(kpis.events) }}</div><div class="s">{{ "{:,}".format(kpis.detections) }} detecciones</div></div>
+  <div class="kpi"><div class="l">Alertas</div><div class="v">{{ kpis.alerts }}</div><div class="s">{{ kpis.open }} abiertas · {{ kpis.alerts - kpis.open }} resueltas</div></div>
+  <div class="kpi"><div class="l">Ventanas insuficientes</div><div class="v">{{ kpis.insufficient }}</div><div class="s">no cuentan como normales</div></div>
+  <div class="kpi"><div class="l">Capturas</div><div class="v">{{ kpis.captures }}</div><div class="s">{{ kpis.reviewed }} revisadas</div></div>
+</div>
+
+<h2>Ejecuciones <span class="count">{{ runs|length }}</span></h2>
+{% if not runs %}<div class="empty">Sin ejecuciones registradas. Ejecuta <span class="mono">python -m monitor.pipeline --scenario c1-normal</span>.</div>{% else %}
+<div class="runs">{% for r in runs %}{% set s = r.summary or {} %}
+<div class="card run">
+  <h3><a href="/ejecuciones/{{ r.run_id }}" title="{{ r.run_id }}">{{ r.scenario }}</a><span class="mono faint">{{ r.started_at|when }}</span></h3>
+  <div class="desc" title="{{ r.description }}">{{ r.description }}</div>
+  <svg class="spark" viewBox="0 0 {{ r.spark.w }} {{ r.spark.h }}" role="img" aria-label="low_prop por ventana de {{ r.scenario }}">
+    <line class="thr" x1="0" x2="{{ r.spark.w }}" y1="{{ r.spark.ty }}" y2="{{ r.spark.ty }}"/>
+    {% for seg in r.spark.segs %}<polyline points="{{ seg }}"/>{% endfor %}
+    {% for d in r.spark.dots %}<a href="/ventanas/{{ d.window_id }}"><circle class="{{ 'ok' if d.ok else 'ins' }}" cx="{{ d.x }}" cy="{{ d.y if d.ok else r.spark.h - 4 }}" r="3"><title>{{ d.window_id|short }} · {{ d.state|es }}{% if d.v is not none %} · low_prop {{ '%.3f'|format(d.v) }}{% endif %}</title></circle></a>{% endfor %}
+  </svg>
+  <div class="spark-legend"><span>low_prop por ventana (0–1)</span><span><span style="color:var(--low)">- - -</span> umbral {{ threshold }} · ○ insuficiente</span></div>
+  <div class="stats">
+    <div><b>{{ s.events }}</b><span>eventos</span></div>
+    <div><b>{{ s.detections }}</b><span>detecciones</span></div>
+    <div><b>{{ s.low_prop_run|fmt }}</b><span>low_prop</span></div>
+    <div><b>{{ r.n_alerts }}</b><span>alertas</span></div>
+  </div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;min-height:22px">{% for a in r.alerts %}<a href="/alertas/{{ a.alert_id }}" class="badge s-{{ a.severity }}" title="{{ a.rule_id }} · {{ a.status|es }}">{{ a.alert_id|short }} {{ a.rule_id.split('-v')[0] }}</a>{% else %}<span class="faint" style="font-size:12px">Sin alertas.</span>{% endfor %}</div>
+  <div class="links"><a href="/eventos?run_id={{ r.run_id }}">Eventos</a><a href="/alertas?run_id={{ r.run_id }}">Alertas</a><a href="/capturas?run_id={{ r.run_id }}">Capturas</a><a href="/tablero?run_id={{ r.run_id }}">Tablero</a>
+    <span class="mono faint" style="margin-left:auto" title="modelo · configuración · commit">{{ r.config_ref }} · {{ (r.git_commit or '')[:7] }}{% if r.git_dirty %}*{% endif %}</span></div>
+</div>{% endfor %}</div>{% endif %}
+
+<h2>Últimas alertas <span class="count"><a href="/alertas">ver todas</a></span></h2>
+{% if not latest %}<div class="empty">Sin alertas. La ausencia de alertas no implica operación saludable: revisa el estado de las ventanas.</div>{% else %}
+<div class="card alerts-list" style="padding:0">{% for a in latest %}
+<a class="row" href="/alertas/{{ a.alert_id }}"><span class="badge s-{{ a.severity }}">{{ a.severity|es }}</span>
+<span><b>{{ a.rule_id }}</b> <span class="faint mono">{{ a.run_id|run_label }} · {{ a.alert_id|short }}</span></span>
+<span class="why">{{ a.reason }}</span><span class="badge st-{{ a.status }}">{{ a.status|es }}</span></a>{% endfor %}</div>{% endif %}
 {% endblock %}

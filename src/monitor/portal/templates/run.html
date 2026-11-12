@@ -1,35 +1,49 @@
 {% extends "base.html" %}
-{% block title %}{{ run.run_id }}{% endblock %}
+{% block title %}{{ run.run_id|run_label }}{% endblock %}
 {% block content %}
-<h1>Ejecución <span class="mono">{{ run.run_id }}</span></h1>
-<div class="grid" style="grid-template-columns:1fr 1fr">
+{% set s = run.summary or {} %}
+<div class="crumbs"><a href="/">Inicio</a><span>/</span>{{ run.run_id|run_label }}</div>
+<h1>{{ run.scenario }}</h1>
+<p class="lead">{{ run.description }} <span class="mono faint">{{ run.run_id }}</span></p>
+<div class="kpis">
+  <div class="kpi"><div class="l">Eventos</div><div class="v">{{ s.events }}</div><div class="s">{% for k, n in (s.by_status or {}).items() if n %}{{ k|es }} {{ n }}{{ ' · ' if not loop.last }}{% endfor %}</div></div>
+  <div class="kpi"><div class="l">Detecciones</div><div class="v">{{ s.detections }}</div><div class="s">baja {{ s.by_zone.low }} · duda {{ s.by_zone.doubt }} · acept. {{ s.by_zone.accepted }}</div></div>
+  <div class="kpi"><div class="l">low_prop de la ejecución</div><div class="v">{{ s.low_prop_run|fmt }}</div><div class="s">bajas / detecciones</div></div>
+  <div class="kpi"><div class="l">Ventanas</div><div class="v">{{ s.windows }}</div><div class="s">{{ s.windows_by_state.eligible }} elegibles · {{ s.windows_by_state.insufficient }} insuficientes</div></div>
+  <div class="kpi"><div class="l">Alertas</div><div class="v">{{ alerts|length }}</div><div class="s">{{ s.captures }} capturas</div></div>
+</div>
+<div class="toolbar" style="justify-content:flex-start;gap:16px"><a href="/eventos?run_id={{ run.run_id }}">Eventos</a><a href="/alertas?run_id={{ run.run_id }}">Alertas</a><a href="/capturas?run_id={{ run.run_id }}">Capturas</a><a href="/tablero?run_id={{ run.run_id }}">Tablero</a></div>
+
+<div class="split">
 <div class="card"><dl class="kv">
-<dt>Escenario</dt><dd>{{ run.scenario }} — {{ run.description }}</dd>
 <dt>Inicio / fin</dt><dd class="mono">{{ run.started_at }} → {{ run.ended_at }}</dd>
 <dt>Fuente</dt><dd class="mono">{{ run.source.path }} (frames {{ run.source.start_frame }}–{{ run.source.end_frame if run.source.end_frame is not none else 'fin' }}, 1 de cada {{ run.source.sample_every }})</dd>
-{% if run.source.fault_injection or run.source.watchdog %}<dt>Falla inyectada</dt><dd class="mono">{{ run.source.fault_injection }} · watchdog {{ run.source.watchdog }}</dd>{% endif %}
+{% if run.source.fault_injection or run.source.watchdog or run.source.switch %}<dt>Falla o cambio inyectado</dt><dd class="mono">{{ run.source.fault_injection or '' }}{% if run.source.watchdog %} · watchdog {{ run.source.watchdog }}{% endif %}{% if run.source.switch %} · switch {{ run.source.switch }}{% endif %}</dd>{% endif %}
 <dt>Modelo</dt><dd class="mono">{{ run.model_ref }}</dd>
 <dt>Entorno</dt><dd class="mono">{{ run.environment }}</dd>
 <dt>Configuración</dt><dd><a class="mono" href="/config/{{ run.config_ref }}">{{ run.config_ref }}</a></dd>
 <dt>Commit</dt><dd class="mono">{{ run.git_commit }}{% if run.git_dirty %} (con cambios sin commit){% endif %}</dd>
 <dt>Comando</dt><dd class="mono">{{ run.command }}</dd>
 </dl></div>
-<div class="card"><pre>{{ run.summary|tojson_pretty }}</pre></div></div>
-<h2>Ventanas y métricas base</h2>
-<div class="wrap"><table><tr><th>Ventana</th><th>Estado</th><th>Frames</th><th>Det.</th><th>low_prop</th>
-{% for m in metric_ids %}<th class="mono">{{ m }}</th>{% endfor %}</tr>
-{% for w in windows %}<tr><td><a class="mono" href="/ventanas/{{ w.window_id }}">{{ w.window_id.split('-')[-1] }}</a></td><td>{{ w.state }}</td>
-<td>{{ w.n_events }}</td><td>{{ w.n_dets }}</td><td>{{ w.low_prop|fmt }}</td>
-{% for m in metric_ids %}{% set mv = by_win.get(w.window_id, {}).get(m) %}<td>{{ mv.value|fmt(3) if mv else '—' }}{% if mv and mv.status != 'ok' %} <span class="muted">({{ mv.status }})</span>{% endif %}</td>{% endfor %}</tr>{% endfor %}
+<details class="card"><summary style="cursor:pointer;font-weight:600">Resumen completo (manifest)</summary><pre style="margin-top:10px;border:0;padding:0">{{ run.summary|tojson_pretty }}</pre></details>
+</div>
+
+<h2>Ventanas y métricas base <span class="count">{{ windows|length }}</span></h2>
+<div class="wrap"><table><tr><th>Ventana</th><th>Estado</th><th class="num">Eventos</th><th class="num">Det.</th><th class="num">low_prop</th>
+{% for m in metric_ids %}<th class="mono num" title="{{ m }}">{{ m.split('_')[0]|upper }}<span class="sub" style="font-family:system-ui">{{ m.split('_', 1)[1] }}</span></th>{% endfor %}</tr>
+{% for w in windows %}<tr><td><a class="mono" href="/ventanas/{{ w.window_id }}">{{ w.window_id|short }}</a></td><td><span class="badge w-{{ w.state }}">{{ w.state|es }}</span></td>
+<td class="num">{{ w.n_events }}</td><td class="num">{{ w.n_dets }}</td><td class="num">{{ w.low_prop|fmt }}</td>
+{% for m in metric_ids %}{% set mv = by_win.get(w.window_id, {}).get(m) %}<td class="num">{{ mv.value|fmt(3) if mv else '—' }}{% if mv and mv.status != 'ok' %}<span class="sub">{{ mv.status }}</span>{% endif %}</td>{% endfor %}</tr>{% endfor %}
 </table></div>
-{% if source_events %}<h2 id="fuente">Eventos de la fuente (conexión y cambios de entrada)</h2>
+{% if source_events %}<h2 id="fuente">Eventos de la fuente y del detector <span class="count">{{ source_events|length }}</span></h2>
 <div class="wrap"><table><tr><th>#</th><th>Momento (UTC)</th><th>Tipo</th><th>Detalle</th></tr>
-{% for s in source_events %}<tr><td>{{ s.seq }}</td><td class="mono">{{ s.ts }}</td><td>{{ s.kind }}</td><td class="mono">{{ s.detail }}</td></tr>{% endfor %}
+{% for s in source_events %}<tr><td>{{ s.seq }}</td><td class="mono">{{ s.ts|when(false) }}</td><td><b>{{ s.kind }}</b></td><td class="mono" style="white-space:normal;overflow-wrap:anywhere">{{ s.detail }}</td></tr>{% endfor %}
 </table></div>
-<p class="muted">Huecos registrados por el watchdog: <a href="/eventos?run_id={{ run.run_id }}&status=source_gap">{{ n_gaps }} eventos <span class="mono">source_gap</span></a>.</p>{% endif %}
-<h2>Alertas</h2>
-{% if not alerts %}<div class="empty">Sin alertas en esta ejecución.</div>{% else %}
-<div class="wrap"><table><tr><th>Alerta</th><th>Regla</th><th>Severidad</th><th>Estado</th><th>Abierta</th><th>Resuelta</th></tr>
-{% for a in alerts %}<tr><td><a href="/alertas/{{ a.alert_id }}">{{ a.alert_id }}</a></td><td>{{ a.rule_id }}</td><td><span class="badge s-{{ a.severity }}">{{ a.severity }}</span></td>
-<td><span class="badge st-{{ a.status }}">{{ a.status }}</span></td><td class="mono">{{ a.opened_at }}</td><td class="mono">{{ a.resolved_at or '—' }}</td></tr>{% endfor %}</table></div>{% endif %}
+<p class="muted">{% if n_gaps %}Huecos registrados por el watchdog: <a href="/eventos?run_id={{ run.run_id }}&status=source_gap">{{ n_gaps }} eventos <span class="mono">source_gap</span></a>. {% endif %}
+{% if s.by_status and s.by_status.error %}Errores de inferencia: <a href="/eventos?run_id={{ run.run_id }}&status=error">{{ s.by_status.error }} eventos <span class="mono">error</span></a>.{% endif %}</p>{% endif %}
+<h2>Alertas <span class="count">{{ alerts|length }}</span></h2>
+{% if not alerts %}<div class="empty">Sin alertas en esta ejecución. Revisa el estado de las ventanas: la ausencia de alertas no implica operación saludable.</div>{% else %}
+<div class="wrap"><table><tr><th>Alerta</th><th>Regla</th><th>Severidad</th><th>Estado</th><th>Abierta</th><th>Resuelta</th><th>Motivo</th></tr>
+{% for a in alerts %}<tr><td><a class="mono" href="/alertas/{{ a.alert_id }}" title="{{ a.alert_id }}">{{ a.alert_id|short }}</a></td><td>{{ a.rule_id }}</td><td><span class="badge s-{{ a.severity }}">{{ a.severity|es }}</span></td>
+<td><span class="badge st-{{ a.status }}">{{ a.status|es }}</span></td><td class="mono">{{ a.opened_at|when(false) }}</td><td class="mono">{{ a.resolved_at|when(false) if a.resolved_at else '—' }}</td><td>{{ a.reason }}</td></tr>{% endfor %}</table></div>{% endif %}
 {% endblock %}

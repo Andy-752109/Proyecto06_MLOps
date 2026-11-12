@@ -1,34 +1,73 @@
 {% extends "base.html" %}
 {% block title %}Eventos{% endblock %}
 {% block content %}
+{% set adv = ["score_min","score_max","dets_min","dets_max","since","until","window","reason","in_alert","q","sort"] %}
+{% set names = {"run_id":"ejecución","status":"estado","zone":"zona","captured":"con captura","score_min":"máx. s ≥","score_max":"máx. s ≤",
+   "dets_min":"detecciones ≥","dets_max":"detecciones ≤","since":"desde","until":"hasta","window":"ventana","reason":"motivo",
+   "in_alert":"en alguna alerta","q":"id contiene","sort":"orden"} %}
 <h1>Eventos de inferencia</h1>
-<form class="filters" method="get">
-  <label>Ejecución<select name="run_id"><option value="">(todas)</option>
-    {% for r in run_ids %}<option {% if r == f.run_id %}selected{% endif %}>{{ r }}</option>{% endfor %}</select></label>
-  <label>Estado<select name="status"><option value="">(todos)</option>
-    {% for s in ["ok","no_detections","error","source_gap"] %}<option {% if s == f.status %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></label>
-  <label>Zona del frame<select name="zone"><option value="">(todas)</option>
-    {% for z in ["low","doubt","accepted"] %}<option {% if z == f.zone %}selected{% endif %}>{{ z }}</option>{% endfor %}</select></label>
-  <label>Solo con captura<input type="checkbox" name="captured" value="true" {% if f.captured %}checked{% endif %}></label>
-  <button>Consultar</button>
+<p class="lead">Un evento por frame procesado. Los filtros se combinan (Y) y quedan en la URL, así que una consulta se puede compartir. La misma consulta sirve para la API y la exportación.</p>
+<form class="filters" method="get" action="/eventos">
+  <div class="row">
+    <label>Ejecución<select name="run_id"><option value="">(todas)</option>
+      {% for r in run_ids %}<option value="{{ r }}" {% if r == f.run_id %}selected{% endif %}>{{ r|run_label }}</option>{% endfor %}</select></label>
+    <label>Estado<select name="status"><option value="">(todos)</option>
+      {% for s in statuses %}<option value="{{ s }}" {% if s == f.status %}selected{% endif %}>{{ s|es }}</option>{% endfor %}</select></label>
+    <label>Zona del frame<select name="zone"><option value="">(todas)</option>
+      {% for z in zones %}<option value="{{ z }}" {% if z == f.zone %}selected{% endif %}>{{ z|es }}</option>{% endfor %}</select></label>
+    <label class="check"><input type="checkbox" name="captured" value="true" {% if f.captured %}checked{% endif %}> Solo con captura</label>
+    <button>Consultar</button> <a class="btn ghost" href="/eventos">Limpiar</a>
+  </div>
+  <details {% if active.keys()|select("in", adv)|list %}open{% endif %}><summary>Filtros avanzados</summary>
+  <div class="row">
+    <label>Máx. puntuación desde<input type="number" name="score_min" min="0" max="1" step="0.01" value="{{ f.score_min }}" placeholder="0.00"></label>
+    <label>hasta<input type="number" name="score_max" min="0" max="1" step="0.01" value="{{ f.score_max }}" placeholder="1.00"></label>
+    <label>Detecciones desde<input type="number" name="dets_min" min="0" step="1" value="{{ f.dets_min }}"></label>
+    <label>hasta<input type="number" name="dets_max" min="0" step="1" value="{{ f.dets_max }}"></label>
+    <label>Capturado desde (UTC)<input type="text" name="since" value="{{ f.since }}" placeholder="2026-11-12T16:25:00" size="22"></label>
+    <label>hasta (UTC)<input type="text" name="until" value="{{ f.until }}" placeholder="2026-11-12T16:26:00" size="22"></label>
+  </div>
+  <div class="row" style="margin-top:10px">
+    <label>Ventana (índice)<input type="number" name="window" min="0" step="1" value="{{ f.window }}" placeholder="p. ej. 3"></label>
+    <label>Motivo de captura<select name="reason"><option value="">(todos)</option>
+      {% for r in reasons %}<option {% if r == f.reason %}selected{% endif %}>{{ r }}</option>{% endfor %}</select></label>
+    <label>Id contiene<input type="text" name="q" value="{{ f.q }}" placeholder="e00042" size="12"></label>
+    <label>Ordenar por<select name="sort">{% for k, label in sorts.items() %}<option value="{{ k }}" {% if k == f.sort %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <label class="check"><input type="checkbox" name="in_alert" value="true" {% if f.in_alert %}checked{% endif %}> Solo eventos que sustentan alguna alerta</label>
+  </div>
+  <p class="faint" style="margin:8px 0 0;font-size:12px">El rango de puntuación usa la máxima del frame y excluye eventos sin puntuación (sin detecciones, error, hueco), que no equivalen a confianza 0.</p>
+  </details>
 </form>
-<p class="muted">{{ total }} eventos · página {{ page }} de {{ pages }} ·
-  exportar los {{ total }} con estos filtros: <a href="/exportar/eventos.csv?{{ f|qs }}">CSV</a> ·
-  <a href="/exportar/eventos.jsonl?{{ f|qs }}">JSONL</a></p>
-{% if not items %}<div class="empty">Ningún evento coincide con la consulta.</div>{% else %}
+
+{% if error %}<div class="flash err"><b>Consulta inválida (HTTP 422).</b> {{ error }}. No se muestran resultados; corrige el filtro o <a href="/eventos">limpia la consulta</a>.</div>{% endif %}
+
+<div class="toolbar">
+  <div class="chips"><b>{{ "{:,}".format(total) }}</b>&nbsp;eventos
+    {% for k, v in active.items() %}{% set rest = dict(active) %}{% set _ = rest.pop(k) %}
+    <span class="chip">{{ names.get(k, k) }}{% if v is not sameas true %}: <b>{{ v|run_label if k == 'run_id' else (sorts[v] if k == 'sort' else (v|es)) }}</b>{% endif %}<a href="/eventos?{{ rest|qs }}" title="quitar este filtro" aria-label="quitar {{ names.get(k, k) }}">×</a></span>{% endfor %}
+  </div>
+  {% if not error %}<div class="muted">Exportar {{ total }} con estos filtros: <a href="/exportar/eventos.csv?{{ active|qs }}">CSV</a> · <a href="/exportar/eventos.jsonl?{{ active|qs }}">JSONL</a> · <a href="/api/eventos?{{ active|qs }}">API</a></div>{% endif %}
+</div>
+
+{% if not items %}{% if not error %}<div class="empty">Ningún evento coincide con la consulta. Prueba quitando alguno de los filtros activos.</div>{% endif %}{% else %}
 <div class="wrap"><table>
-<tr><th>Evento</th><th>Frame</th><th>Fecha (UTC)</th><th>Fuente</th><th>Estado</th><th>Det.</th>
-<th>Baja / duda / acept.</th><th>Máx. s</th><th>Zona frame</th><th>Inferencia ms</th><th>Captura</th><th>Ventana</th></tr>
-{% for e in items %}
-<tr><td><a class="mono" href="/eventos/{{ e.event_id }}">{{ e.event_id }}</a></td><td class="mono">{{ e.frame_id }}</td>
-<td class="mono">{{ e.captured_at }}</td><td>{{ e.source_id }}</td>
-<td><span class="badge st-{{ e.status }}">{{ e.status }}</span></td><td>{{ e.n_detections }}</td>
-<td>{{ e.n_low }} / {{ e.n_doubt }} / {{ e.n_accepted }}</td><td>{{ e.max_score|fmt }}</td>
-<td>{% if e.frame_zone %}<span class="badge z-{{ e.frame_zone }}">{{ e.frame_zone }}</span>{% else %}—{% endif %}</td>
-<td>{{ e.inference_ms|fmt(1) }}</td><td>{{ e.capture_reason or '—' }}</td>
-<td><a class="mono" href="/ventanas/{{ e.window_id }}">{{ e.window_id.split('-')[-1] }}</a></td></tr>
+<tr><th>Evento</th>{% if not f.run_id %}<th>Ejecución</th>{% endif %}<th class="num">Frame</th><th>Capturado (UTC)</th><th>Estado</th><th class="num">Det.</th>
+<th>Baja / duda / acept.</th><th class="num">Máx. s</th><th>Zona</th><th class="num">Inferencia</th><th class="num">Extremo a extremo</th><th>Captura</th><th>Ventana</th></tr>
+{% for e in items %}{% set n = e.n_detections or 1 %}
+<tr><td><a class="mono" href="/eventos/{{ e.event_id }}" title="{{ e.event_id }}">{{ e.event_id|short }}</a></td>
+{% if not f.run_id %}<td><a href="/ejecuciones/{{ e.run_id }}" title="{{ e.run_id }}" style="white-space:nowrap">{{ e.run_id|run_label }}</a></td>{% endif %}
+<td class="num mono">{{ e.frame_index if e.frame_index is not none else '—' }}</td>
+<td class="mono">{{ e.captured_at|when(false) }}</td>
+<td><span class="badge st-{{ e.status }}" title="{{ e.status }}">{{ e.status|es }}</span></td><td class="num">{{ e.n_detections }}</td>
+<td>{{ e.n_low }} / {{ e.n_doubt }} / {{ e.n_accepted }}{% if e.n_detections %}<div class="zbar"><span style="flex:{{ e.n_low }};background:var(--low)"></span><span style="flex:{{ e.n_doubt }};background:var(--doubt)"></span><span style="flex:{{ e.n_accepted }};background:var(--accepted)"></span></div>{% endif %}</td>
+<td class="num">{{ e.max_score|fmt }}</td>
+<td>{% if e.frame_zone %}<span class="badge z-{{ e.frame_zone }}">{{ e.frame_zone|es }}</span>{% else %}—{% endif %}</td>
+<td class="num">{{ e.inference_ms|fmt(1) }}{% if e.inference_ms is not none %} ms{% endif %}</td><td class="num">{{ e.e2e_ms|fmt(1) }}{% if e.e2e_ms is not none %} ms{% endif %}</td>
+<td>{% if e.image_ref %}<a href="/capturas/{{ e.event_id }}">{{ e.capture_reason }}</a>{% else %}<span class="faint">—</span>{% endif %}</td>
+<td><a class="mono" href="/ventanas/{{ e.window_id }}">{{ e.window_id|short }}</a></td></tr>
 {% endfor %}</table></div>
-<p>{% if page > 1 %}<a href="?{{ f|qs(page=page-1) }}">← anterior</a>{% endif %}
-{% if page < pages %} <a href="?{{ f|qs(page=page+1) }}">siguiente →</a>{% endif %}</p>
+<div class="pager">{% if page > 1 %}<a href="?{{ f|qs(page=page-1) }}">← anterior</a>{% endif %}
+<span>página {{ page }} de {{ pages }}</span>
+{% if page < pages %}<a href="?{{ f|qs(page=page+1) }}">siguiente →</a>{% endif %}</div>
 {% endif %}
 {% endblock %}

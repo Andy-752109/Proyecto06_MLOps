@@ -1,14 +1,16 @@
 {% extends "base.html" %}
 {% from "_frame.html" import frame %}
-{% block title %}{{ ev.event_id }}{% endblock %}
+{% block title %}Evento {{ ev.event_id|short }}{% endblock %}
 {% block content %}
-<h1>Evento <span class="mono">{{ ev.event_id }}</span></h1>
-<p>{% if prev %}<a href="/eventos/{{ prev }}">← anterior</a>{% endif %} {% if next %}<a href="/eventos/{{ next }}">siguiente →</a>{% endif %}</p>
-<div class="grid" style="grid-template-columns:minmax(300px,2fr) minmax(280px,1fr)">
+<div class="crumbs"><a href="/eventos?run_id={{ ev.run_id }}">Eventos</a><span>/</span><a href="/ejecuciones/{{ ev.run_id }}">{{ ev.run_id|run_label }}</a><span>/</span><a href="/ventanas/{{ ev.window_id }}">{{ ev.window_id|short }}</a><span>/</span>{{ ev.event_id|short }}</div>
+<h1>Evento {{ ev.event_id|short }} <span class="badge st-{{ ev.status }}" title="{{ ev.status }}">{{ ev.status|es }}</span>{% if ev.frame_zone %} <span class="badge z-{{ ev.frame_zone }}">{{ ev.frame_zone|es }}</span>{% endif %}</h1>
+<div class="toolbar"><span class="mono muted">{{ ev.event_id }}</span>
+<span>{% if prev %}<a href="/eventos/{{ prev }}">← {{ prev|short }}</a>{% endif %}{% if prev and next %} · {% endif %}{% if next %}<a href="/eventos/{{ next }}">{{ next|short }} →</a>{% endif %}</span></div>
+<div class="split">
 <div class="card">
 {% if ev.image_ref %}
   {{ frame(ev) }}
-  <p class="muted">Captura: <a href="/evidencia/{{ ev.image_ref }}" class="mono">{{ ev.image_ref }}</a> · motivo <b>{{ ev.capture_reason }}</b>. <a href="/capturas/{{ ev.event_id }}">Revisar esta captura</a>. Cajas dibujadas desde las detecciones registradas (verde aceptada, ámbar duda, rojo baja).</p>
+  <p class="muted" style="margin:8px 0 0">Captura <a href="/evidencia/{{ ev.image_ref }}" class="mono">{{ ev.image_ref.split('/')[-1] }}</a> · motivo <b>{{ ev.capture_reason }}</b> · <a href="/capturas/{{ ev.event_id }}">revisar esta captura</a>. Cajas dibujadas desde las detecciones registradas (verde aceptada, ámbar duda, rojo baja).</p>
 {% else %}
   {% if ev.status == 'source_gap' %}<div class="empty">Hueco de la fuente: el frame esperado no llegó, así que no hay imagen ni inferencia. {{ ev.error }}. Ver los eventos de conexión en la <a href="/ejecuciones/{{ ev.run_id }}#fuente">ejecución</a>.</div>
   {% else %}<div class="empty">Este frame no se capturó según la política de captura (se conserva el evento y sus detecciones).</div>{% endif %}
@@ -16,25 +18,25 @@
 </div>
 <div class="card"><dl class="kv">
   <dt>Ejecución</dt><dd><a href="/ejecuciones/{{ ev.run_id }}">{{ ev.run_id }}</a></dd>
-  <dt>Frame</dt><dd class="mono">{{ ev.frame_id }} (índice {{ ev.frame_index }}, {{ ev.pts_s }} s)</dd>
+  <dt>Frame</dt><dd class="mono">{{ ev.frame_id or '—' }} (índice {{ ev.frame_index if ev.frame_index is not none else '—' }}, {{ ev.pts_s if ev.pts_s is not none else '—' }} s)</dd>
   <dt>Capturado</dt><dd class="mono">{{ ev.captured_at }}</dd>
   <dt>Inferido</dt><dd class="mono">{{ ev.inferred_at }}</dd>
   <dt>Fuente</dt><dd>{{ ev.source_id }}</dd>
   <dt>Tarea</dt><dd>{{ ev.task }}</dd>
-  <dt>Modelo</dt><dd class="mono">{{ ev.model_ref }}<br>{{ ev.model_sha256 }}</dd>
-  <dt>Configuración</dt><dd><a class="mono" href="/config/{{ ev.config_ref }}">{{ ev.config_ref }}</a> (inferior {{ policy.lower }}, superior {{ policy.upper }})</dd>
-  <dt>Estado</dt><dd><span class="badge st-{{ ev.status }}">{{ ev.status }}</span> {{ ev.error or '' }}</dd>
+  <dt>Modelo</dt><dd class="mono">{{ ev.model_ref }}<br><span class="faint">{{ ev.model_sha256 or 'sin versión reportada (no hubo inferencia)' }}</span></dd>
+  <dt>Configuración</dt><dd><a class="mono" href="/config/{{ ev.config_ref }}">{{ ev.config_ref }}</a> <span class="muted">(inferior {{ policy.lower }}, superior {{ policy.upper }})</span></dd>
+  <dt>Estado</dt><dd><span class="badge st-{{ ev.status }}">{{ ev.status|es }}</span>{% if ev.error %}<div class="mono" style="margin-top:4px">{{ ev.error }}</div>{% endif %}</dd>
   <dt>Detecciones</dt><dd>{{ ev.n_detections }} (baja {{ ev.n_low }}, duda {{ ev.n_doubt }}, aceptada {{ ev.n_accepted }})</dd>
-  <dt>Máx. puntuación</dt><dd>{{ ev.max_score|fmt }} {% if ev.frame_zone %}<span class="badge z-{{ ev.frame_zone }}">{{ ev.frame_zone }}</span>{% endif %}</dd>
+  <dt>Máx. puntuación</dt><dd>{{ ev.max_score|fmt }}</dd>
   <dt>Tiempos</dt><dd>inferencia {{ ev.inference_ms|fmt(1) }} ms · cola {{ ev.queue_ms|fmt(1) }} ms · extremo a extremo {{ ev.e2e_ms|fmt(1) }} ms</dd>
   <dt>Ventana</dt><dd><a class="mono" href="/ventanas/{{ ev.window_id }}">{{ ev.window_id }}</a></dd>
-  <dt>Alertas</dt><dd>{% for a in alerts %}<a href="/alertas/{{ a.alert_id }}">{{ a.alert_id }}</a> ({{ a.rule_id }})<br>{% else %}ninguna{% endfor %}</dd>
+  <dt>Alertas</dt><dd>{% for a in alerts %}<a href="/alertas/{{ a.alert_id }}">{{ a.alert_id|short }}</a> {{ a.rule_id }}<br>{% else %}ninguna{% endfor %}</dd>
 </dl></div>
 </div>
-<h2>Detecciones candidatas</h2>
-{% if not ev.detections %}<div class="empty">Sin detecciones: estado <b>{{ ev.status }}</b>, sin puntuación asignada.</div>{% else %}
-<div class="wrap"><table><tr><th>ID</th><th>Clase</th><th>Puntuación</th><th>Zona</th><th>Caja xyxy (px)</th></tr>
-{% for d in ev.detections %}<tr><td class="mono">{{ d.det_id }}</td><td>{{ d.class_name }} ({{ d.class_id }})</td><td>{{ '%.4f'|format(d.score) }}</td>
-<td><span class="badge z-{{ d.zone }}">{{ d.zone }}</span></td><td class="mono">{{ d.bbox_xyxy }}</td></tr>{% endfor %}</table></div>{% endif %}
+<h2>Detecciones candidatas <span class="count">{{ ev.detections|length }}</span></h2>
+{% if not ev.detections %}<div class="empty">Sin detecciones: estado <b>{{ ev.status|es }}</b>, sin puntuación asignada (no equivale a confianza 0).</div>{% else %}
+<div class="wrap"><table><tr><th>ID</th><th>Clase</th><th class="num">Puntuación</th><th>Zona</th><th>Caja xyxy (px)</th></tr>
+{% for d in ev.detections %}<tr><td class="mono">{{ d.det_id|short }}</td><td>{{ d.class_name }} ({{ d.class_id }})</td><td class="num">{{ '%.4f'|format(d.score) }}</td>
+<td><span class="badge z-{{ d.zone }}">{{ d.zone|es }}</span></td><td class="mono">{{ d.bbox_xyxy }}</td></tr>{% endfor %}</table></div>{% endif %}
 <p><a href="/api/eventos/{{ ev.event_id }}">JSON del evento</a></p>
 {% endblock %}
