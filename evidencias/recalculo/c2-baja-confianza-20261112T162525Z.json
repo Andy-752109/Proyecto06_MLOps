@@ -1,0 +1,882 @@
+{
+  "run_id": "c2-baja-confianza-20261112T162525Z",
+  "git_commit": "872e7c58a97e8f5eb46e80b8afaeb1fa467429e2",
+  "config_ref": "cfg-517d02606b3e",
+  "n_checks": 113,
+  "n_failed": 0,
+  "failed": [],
+  "run_level": {
+    "events": 198,
+    "valid_frames": 198,
+    "detections": 841,
+    "by_zone": {
+      "low": 510,
+      "doubt": 317,
+      "accepted": 14
+    },
+    "low_prop_run": 0.6064209274673008,
+    "inference_ms_p50": 37.506,
+    "inference_ms_p95": 48.745,
+    "frames_without_detections": 3,
+    "errors": 0,
+    "captures": 82
+  },
+  "windows": [
+    {
+      "window_id": "c2-baja-confianza-20261112T162525Z-w000",
+      "n_events": 20,
+      "n_valid": 20,
+      "n_dets": 34,
+      "n_low": 22,
+      "low_prop": 0.6470588235294118,
+      "state": "eligible",
+      "g1_inference_ms_p95": 43.982,
+      "g2_processing_fps": 5.944930979464671,
+      "g3_rss_mb_max": 435.922,
+      "g4_low_conf_prop": 0.6470588235294118,
+      "g5_trace_coverage": 1.0,
+      "g6_model_version_match": 1.0,
+      "g7_active_alerts": 1,
+      "rule_low_met": true
+    },
+    {
+      "window_id": "c2-baja-confianza-20261112T162525Z-w001",
+      "n_events": 20,
+      "n_valid": 20,
+      "n_dets": 62,
+      "n_low": 33,
+      "low_prop": 0.532258064516129,
+      "state": "eligible",
+      "g1_inference_ms_p95": 50.689,
+      "g2_processing_fps": 4.9777310060133075,
+      "g3_rss_mb_max": 436.219,
+      "g4_low_conf_prop": 0.532258064516129,
+      "g5_trace_coverage": 1.0,
+      "g6_model_version_match": 1.0,
+      "g7_active_alerts": 1,
+      "rule_low_met": true
+    },
+    {
+      "window_id": "c2-baja-confianza-20261112T162525Z-w002",
+      "n_events": 20,
+      "n_valid": 20,
+      "n_dets": 72,
+      "n_low": 42,
+      "low_prop": 0.5833333333333334,
+      "state": "eligible",
+      "g1_inference_ms_p95": 49.264,
+      "g2_processing_fps": 4.975124370655174,
+      "g3_rss_mb_max": 217.484,
+      "g4_low_conf_prop": 0.5833333333333334,
+      "g5_trace_coverage": 1.0,
+      "g6_model_version_match": 1.0,
+      "g7_active_alerts": 2,
+      "rule_low_met": true
+    },
+    {
+      "window_id": "c2-baja-confianza-20261112T162525Z-w003",
+      "n_events": 20,
+      "n_valid": 20,
+      "n_dets": 76,
+      "n_low": 22,
+      "low_prop": 0.2894736842105263,
+      "state": "eligible",
+      "g1_inference_ms_p95": 49.449,
+      "g2_processing_fps": 4.9934296101583735,
+      "g3_rss_mb_max": 232.656,
+      "g4_low_conf_prop": 0.2894736842105263,
+      "g5_trace_coverage": 1.0,
+      "g6_model_version_match": 1.0,
+      "g7_active_alerts": 0,
+      "rule_low_met": false
+    },
+    {
+      "window_id": "c2-baja-confianza-20261112T162525Z-w004",
+      "n_events": 20,
+      "n_valid": 20,
+      "n_dets": 70,
+      "n_low": 43,
+      "low_prop": 0.6142857142857143,
+      "state": "eligible",
+      "g1_inference_ms_p95": 44.988,
+      "g2_processing_fps": 5.021141438980819,
+      "g3_rss_mb_max": 233.672,
+      "g4_low_conf_prop": 0.6142857142857143,
+      "g5_trace_coverage": 1.0,
+      "g6_model_version_match": 1.0,
+      "g7_active_alerts": 1,
+      "rule_low_met": true
+    },
+    {
+      "window_id": "c2-baja-confianza-20261112T162525Z-w005",
+      "n_events": 20,
+      "n_valid": 20,
+      "n_dets": 97,
+      "n_low": 68,
+      "low_prop": 0.7010309278350515,
+      "state": "eligible",
+      "g1_inference_ms_p95": 43.671,
+      "g2_processing_fps": 4.999999749033087,
+      "g3_rss_mb_max": 223.234,
+      "g4_low_conf_prop": 0.7010309278350515,
+      "g5_trace_coverage": 1.0,
+      "g6_model_version_match": 1.0,
+      "g7_active_alerts": 1,
+      "rule_low_met": true
+    },
+    {
+      "window_id": "c2-baja-confianza-20261112T162525Z-w006",
+      "n_events": 20,
+      "n_valid": 20,
+      "n_dets": 98,
+      "n_low": 71,
+      "low_prop": 0.7244897959183674,
+      "state": "eligible",
+      "g1_inference_ms_p95": 44.256,
+      "g2_processing_fps": 5.003950577717677,
+      "g3_rss_mb_max": 239.703,
+      "g4_low_conf_prop": 0.7244897959183674,
+      "g5_trace_coverage": 1.0,
+      "g6_model_version_match": 1.0,
+      "g7_active_alerts": 2,
+      "rule_low_met": true
+    },
+    {
+      "window_id": "c2-baja-confianza-20261112T162525Z-w007",
+      "n_events": 20,
+      "n_valid": 20,
+      "n_dets": 124,
+      "n_low": 84,
+      "low_prop": 0.6774193548387096,
+      "state": "eligible",
+      "g1_inference_ms_p95": 44.244,
+      "g2_processing_fps": 4.996055467330168,
+      "g3_rss_mb_max": 240.047,
+      "g4_low_conf_prop": 0.6774193548387096,
+      "g5_trace_coverage": 1.0,
+      "g6_model_version_match": 1.0,
+      "g7_active_alerts": 2,
+      "rule_low_met": true
+    },
+    {
+      "window_id": "c2-baja-confianza-20261112T162525Z-w008",
+      "n_events": 20,
+      "n_valid": 20,
+      "n_dets": 123,
+      "n_low": 75,
+      "low_prop": 0.6097560975609756,
+      "state": "eligible",
+      "g1_inference_ms_p95": 45.549,
+      "g2_processing_fps": 5.005268698868918,
+      "g3_rss_mb_max": 230.25,
+      "g4_low_conf_prop": 0.6097560975609756,
+      "g5_trace_coverage": 1.0,
+      "g6_model_version_match": 1.0,
+      "g7_active_alerts": 2,
+      "rule_low_met": true
+    },
+    {
+      "window_id": "c2-baja-confianza-20261112T162525Z-w009",
+      "n_events": 18,
+      "n_valid": 18,
+      "n_dets": 85,
+      "n_low": 50,
+      "low_prop": 0.5882352941176471,
+      "state": "eligible",
+      "g1_inference_ms_p95": 48.745,
+      "g2_processing_fps": 4.994124494980217,
+      "g3_rss_mb_max": 229.891,
+      "g4_low_conf_prop": 0.5882352941176471,
+      "g5_trace_coverage": 1.0,
+      "g6_model_version_match": 1.0,
+      "g7_active_alerts": 2,
+      "rule_low_met": true
+    }
+  ],
+  "checks": [
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w000 g1_inference_ms_p95",
+      "stored": 43.982,
+      "recalc": 43.982,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w000 g2_processing_fps",
+      "stored": 5.9449,
+      "recalc": 5.944930979464671,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w000 g3_rss_mb_max",
+      "stored": 435.922,
+      "recalc": 435.922,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w000 g4_low_conf_prop",
+      "stored": 0.6470589999999999,
+      "recalc": 0.6470588235294118,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w000 g5_trace_coverage",
+      "stored": 1.0,
+      "recalc": 1.0,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w000 g6_model_version_match",
+      "stored": 1.0,
+      "recalc": 1.0,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w000 g7_active_alerts",
+      "stored": 1.0,
+      "recalc": 1.0,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w001 g1_inference_ms_p95",
+      "stored": 50.689,
+      "recalc": 50.689,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w001 g2_processing_fps",
+      "stored": 4.9777000000000005,
+      "recalc": 4.9777310060133075,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w001 g3_rss_mb_max",
+      "stored": 436.219,
+      "recalc": 436.219,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w001 g4_low_conf_prop",
+      "stored": 0.532258,
+      "recalc": 0.532258064516129,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w001 g5_trace_coverage",
+      "stored": 1.0,
+      "recalc": 1.0,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w001 g6_model_version_match",
+      "stored": 1.0,
+      "recalc": 1.0,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w001 g7_active_alerts",
+      "stored": 1.0,
+      "recalc": 1.0,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w002 g1_inference_ms_p95",
+      "stored": 49.264,
+      "recalc": 49.264,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w002 g2_processing_fps",
+      "stored": 4.9751,
+      "recalc": 4.975124370655174,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w002 g3_rss_mb_max",
+      "stored": 217.484,
+      "recalc": 217.484,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w002 g4_low_conf_prop",
+      "stored": 0.583333,
+      "recalc": 0.5833333333333334,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w002 g5_trace_coverage",
+      "stored": 1.0,
+      "recalc": 1.0,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w002 g6_model_version_match",
+      "stored": 1.0,
+      "recalc": 1.0,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w002 g7_active_alerts",
+      "stored": 2.0,
+      "recalc": 2.0,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w003 g1_inference_ms_p95",
+      "stored": 49.449,
+      "recalc": 49.449,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w003 g2_processing_fps",
+      "stored": 4.9934,
+      "recalc": 4.9934296101583735,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w003 g3_rss_mb_max",
+      "stored": 232.656,
+      "recalc": 232.656,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w003 g4_low_conf_prop",
+      "stored": 0.289474,
+      "recalc": 0.2894736842105263,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w003 g5_trace_coverage",
+      "stored": 1.0,
+      "recalc": 1.0,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w003 g6_model_version_match",
+      "stored": 1.0,
+      "recalc": 1.0,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w003 g7_active_alerts",
+      "stored": 0.0,
+      "recalc": 0.0,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w004 g1_inference_ms_p95",
+      "stored": 44.988,
+      "recalc": 44.988,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w004 g2_processing_fps",
+      "stored": 5.0211,
+      "recalc": 5.021141438980819,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w004 g3_rss_mb_max",
+      "stored": 233.672,
+      "recalc": 233.672,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w004 g4_low_conf_prop",
+      "stored": 0.614286,
+      "recalc": 0.6142857142857143,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w004 g5_trace_coverage",
+      "stored": 1.0,
+      "recalc": 1.0,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w004 g6_model_version_match",
+      "stored": 1.0,
+      "recalc": 1.0,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w004 g7_active_alerts",
+      "stored": 1.0,
+      "recalc": 1.0,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w005 g1_inference_ms_p95",
+      "stored": 43.671,
+      "recalc": 43.671,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w005 g2_processing_fps",
+      "stored": 5.0,
+      "recalc": 4.999999749033087,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w005 g3_rss_mb_max",
+      "stored": 223.234,
+      "recalc": 223.234,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w005 g4_low_conf_prop",
+      "stored": 0.701031,
+      "recalc": 0.7010309278350515,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w005 g5_trace_coverage",
+      "stored": 1.0,
+      "recalc": 1.0,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w005 g6_model_version_match",
+      "stored": 1.0,
+      "recalc": 1.0,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w005 g7_active_alerts",
+      "stored": 1.0,
+      "recalc": 1.0,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w006 g1_inference_ms_p95",
+      "stored": 44.256,
+      "recalc": 44.256,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w006 g2_processing_fps",
+      "stored": 5.004,
+      "recalc": 5.003950577717677,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w006 g3_rss_mb_max",
+      "stored": 239.703,
+      "recalc": 239.703,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w006 g4_low_conf_prop",
+      "stored": 0.7244900000000001,
+      "recalc": 0.7244897959183674,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w006 g5_trace_coverage",
+      "stored": 1.0,
+      "recalc": 1.0,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w006 g6_model_version_match",
+      "stored": 1.0,
+      "recalc": 1.0,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w006 g7_active_alerts",
+      "stored": 2.0,
+      "recalc": 2.0,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w007 g1_inference_ms_p95",
+      "stored": 44.244,
+      "recalc": 44.244,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w007 g2_processing_fps",
+      "stored": 4.9961,
+      "recalc": 4.996055467330168,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w007 g3_rss_mb_max",
+      "stored": 240.047,
+      "recalc": 240.047,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w007 g4_low_conf_prop",
+      "stored": 0.677419,
+      "recalc": 0.6774193548387096,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w007 g5_trace_coverage",
+      "stored": 1.0,
+      "recalc": 1.0,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w007 g6_model_version_match",
+      "stored": 1.0,
+      "recalc": 1.0,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w007 g7_active_alerts",
+      "stored": 2.0,
+      "recalc": 2.0,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w008 g1_inference_ms_p95",
+      "stored": 45.549,
+      "recalc": 45.549,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w008 g2_processing_fps",
+      "stored": 5.0053,
+      "recalc": 5.005268698868918,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w008 g3_rss_mb_max",
+      "stored": 230.25,
+      "recalc": 230.25,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w008 g4_low_conf_prop",
+      "stored": 0.609756,
+      "recalc": 0.6097560975609756,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w008 g5_trace_coverage",
+      "stored": 1.0,
+      "recalc": 1.0,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w008 g6_model_version_match",
+      "stored": 1.0,
+      "recalc": 1.0,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w008 g7_active_alerts",
+      "stored": 2.0,
+      "recalc": 2.0,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w009 g1_inference_ms_p95",
+      "stored": 48.745,
+      "recalc": 48.745,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w009 g2_processing_fps",
+      "stored": 4.9941,
+      "recalc": 4.994124494980217,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w009 g3_rss_mb_max",
+      "stored": 229.891,
+      "recalc": 229.891,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w009 g4_low_conf_prop",
+      "stored": 0.588235,
+      "recalc": 0.5882352941176471,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w009 g5_trace_coverage",
+      "stored": 1.0,
+      "recalc": 1.0,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w009 g6_model_version_match",
+      "stored": 1.0,
+      "recalc": 1.0,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w009 g7_active_alerts",
+      "stored": 2.0,
+      "recalc": 2.0,
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w000 n_valid",
+      "stored": 20,
+      "recalc": 20.0,
+      "ok": 1.0
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w000 n_dets",
+      "stored": 34,
+      "recalc": 34.0,
+      "ok": 1.0
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w000 n_low",
+      "stored": 22,
+      "recalc": 22.0,
+      "ok": 1.0
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w000 state",
+      "stored": "eligible",
+      "recalc": "eligible",
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w001 n_valid",
+      "stored": 20,
+      "recalc": 20.0,
+      "ok": 1.0
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w001 n_dets",
+      "stored": 62,
+      "recalc": 62.0,
+      "ok": 1.0
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w001 n_low",
+      "stored": 33,
+      "recalc": 33.0,
+      "ok": 1.0
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w001 state",
+      "stored": "eligible",
+      "recalc": "eligible",
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w002 n_valid",
+      "stored": 20,
+      "recalc": 20.0,
+      "ok": 1.0
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w002 n_dets",
+      "stored": 72,
+      "recalc": 72.0,
+      "ok": 1.0
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w002 n_low",
+      "stored": 42,
+      "recalc": 42.0,
+      "ok": 1.0
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w002 state",
+      "stored": "eligible",
+      "recalc": "eligible",
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w003 n_valid",
+      "stored": 20,
+      "recalc": 20.0,
+      "ok": 1.0
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w003 n_dets",
+      "stored": 76,
+      "recalc": 76.0,
+      "ok": 1.0
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w003 n_low",
+      "stored": 22,
+      "recalc": 22.0,
+      "ok": 1.0
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w003 state",
+      "stored": "eligible",
+      "recalc": "eligible",
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w004 n_valid",
+      "stored": 20,
+      "recalc": 20.0,
+      "ok": 1.0
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w004 n_dets",
+      "stored": 70,
+      "recalc": 70.0,
+      "ok": 1.0
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w004 n_low",
+      "stored": 43,
+      "recalc": 43.0,
+      "ok": 1.0
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w004 state",
+      "stored": "eligible",
+      "recalc": "eligible",
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w005 n_valid",
+      "stored": 20,
+      "recalc": 20.0,
+      "ok": 1.0
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w005 n_dets",
+      "stored": 97,
+      "recalc": 97.0,
+      "ok": 1.0
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w005 n_low",
+      "stored": 68,
+      "recalc": 68.0,
+      "ok": 1.0
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w005 state",
+      "stored": "eligible",
+      "recalc": "eligible",
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w006 n_valid",
+      "stored": 20,
+      "recalc": 20.0,
+      "ok": 1.0
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w006 n_dets",
+      "stored": 98,
+      "recalc": 98.0,
+      "ok": 1.0
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w006 n_low",
+      "stored": 71,
+      "recalc": 71.0,
+      "ok": 1.0
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w006 state",
+      "stored": "eligible",
+      "recalc": "eligible",
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w007 n_valid",
+      "stored": 20,
+      "recalc": 20.0,
+      "ok": 1.0
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w007 n_dets",
+      "stored": 124,
+      "recalc": 124.0,
+      "ok": 1.0
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w007 n_low",
+      "stored": 84,
+      "recalc": 84.0,
+      "ok": 1.0
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w007 state",
+      "stored": "eligible",
+      "recalc": "eligible",
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w008 n_valid",
+      "stored": 20,
+      "recalc": 20.0,
+      "ok": 1.0
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w008 n_dets",
+      "stored": 123,
+      "recalc": 123.0,
+      "ok": 1.0
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w008 n_low",
+      "stored": 75,
+      "recalc": 75.0,
+      "ok": 1.0
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w008 state",
+      "stored": "eligible",
+      "recalc": "eligible",
+      "ok": true
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w009 n_valid",
+      "stored": 18,
+      "recalc": 18.0,
+      "ok": 1.0
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w009 n_dets",
+      "stored": 85,
+      "recalc": 85.0,
+      "ok": 1.0
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w009 n_low",
+      "stored": 50,
+      "recalc": 50.0,
+      "ok": 1.0
+    },
+    {
+      "what": "c2-baja-confianza-20261112T162525Z-w009 state",
+      "stored": "eligible",
+      "recalc": "eligible",
+      "ok": true
+    },
+    {
+      "what": "baja-confianza-v1 ventanas de apertura",
+      "stored": [
+        "c2-baja-confianza-20261112T162525Z-w000",
+        "c2-baja-confianza-20261112T162525Z-w004"
+      ],
+      "recalc": [
+        "c2-baja-confianza-20261112T162525Z-w000",
+        "c2-baja-confianza-20261112T162525Z-w004"
+      ],
+      "ok": true
+    },
+    {
+      "what": "image_refs de alertas resuelven",
+      "stored": 0,
+      "recalc": 0,
+      "ok": true
+    },
+    {
+      "what": "zonas por detección (recalculadas con umbrales)",
+      "stored": 0,
+      "recalc": 0,
+      "ok": true
+    }
+  ]
+}
