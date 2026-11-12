@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Alertas{% endblock %}
+{% block content %}
+<h1>Alertas</h1>
+<form class="filters" method="get">
+  <label>Ejecución<select name="run_id"><option value="">(todas)</option>
+    {% for r in run_ids %}<option {% if r == f.run_id %}selected{% endif %}>{{ r }}</option>{% endfor %}</select></label>
+  <label>Estado<select name="status"><option value="">(todos)</option>
+    {% for s in ["open","resolved"] %}<option {% if s == f.status %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></label>
+  <label>Regla<select name="rule_id"><option value="">(todas)</option>
+    {% for r in rule_ids %}<option {% if r == f.rule_id %}selected{% endif %}>{{ r }}</option>{% endfor %}</select></label>
+  <button>Consultar</button>
+</form>
+<p class="muted">{{ items|length }} alertas</p>
+{% if not items %}<div class="empty">Ninguna alerta coincide con la consulta. Ausencia de alertas no implica operación saludable: revisa el estado de las ventanas en la ejecución.</div>{% else %}
+<div class="wrap"><table>
+<tr><th>Alerta</th><th>Momento (UTC)</th><th>Resuelta</th><th>Regla</th><th>Severidad</th><th>Estado</th><th>Motivo</th><th>Acción sugerida</th><th>Evidencia</th></tr>
+{% for a in items %}
+<tr><td><a class="mono" href="/alertas/{{ a.alert_id }}">{{ a.alert_id }}</a></td><td class="mono">{{ a.opened_at }}</td>
+<td class="mono">{{ a.resolved_at or '—' }}</td><td>{{ a.rule_id }}</td>
+<td><span class="badge s-{{ a.severity }}">{{ a.severity }}</span></td><td><span class="badge st-{{ a.status }}">{{ a.status }}</span></td>
+<td>{{ a.reason }}</td><td>{{ a.suggested_action }}</td>
+<td>{{ a.window_ids|length }} ventanas · {{ a.event_ids|length }} eventos · {{ a.image_refs|length }} capturas</td></tr>
+{% endfor %}</table></div>{% endif %}
+{% endblock %}

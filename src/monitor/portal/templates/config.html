@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}{{ c.config_ref }}{% endblock %}
+{% block content %}
+<h1>Configuración <span class="mono">{{ c.config_ref }}</span></h1>
+<p class="muted">Registrada {{ c.created_at }}. El identificador es el SHA-256 de este contenido canónico.</p>
+<pre>{{ c.snapshot|tojson_pretty }}</pre>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Eventos{% endblock %}
+{% block content %}
+<h1>Eventos de inferencia</h1>
+<form class="filters" method="get">
+  <label>Ejecución<select name="run_id"><option value="">(todas)</option>
+    {% for r in run_ids %}<option {% if r == f.run_id %}selected{% endif %}>{{ r }}</option>{% endfor %}</select></label>
+  <label>Estado<select name="status"><option value="">(todos)</option>
+    {% for s in ["ok","no_detections","error"] %}<option {% if s == f.status %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></label>
+  <label>Zona del frame<select name="zone"><option value="">(todas)</option>
+    {% for z in ["low","doubt","accepted"] %}<option {% if z == f.zone %}selected{% endif %}>{{ z }}</option>{% endfor %}</select></label>
+  <label>Solo con captura<input type="checkbox" name="captured" value="true" {% if f.captured %}checked{% endif %}></label>
+  <button>Consultar</button>
+</form>
+<p class="muted">{{ total }} eventos · página {{ page }} de {{ pages }}</p>
+{% if not items %}<div class="empty">Ningún evento coincide con la consulta.</div>{% else %}
+<div class="wrap"><table>
+<tr><th>Evento</th><th>Frame</th><th>Fecha (UTC)</th><th>Fuente</th><th>Estado</th><th>Det.</th>
+<th>Baja / duda / acept.</th><th>Máx. s</th><th>Zona frame</th><th>Inferencia ms</th><th>Captura</th><th>Ventana</th></tr>
+{% for e in items %}
+<tr><td><a class="mono" href="/eventos/{{ e.event_id }}">{{ e.event_id }}</a></td><td class="mono">{{ e.frame_id }}</td>
+<td class="mono">{{ e.captured_at }}</td><td>{{ e.source_id }}</td>
+<td><span class="badge st-{{ e.status }}">{{ e.status }}</span></td><td>{{ e.n_detections }}</td>
+<td>{{ e.n_low }} / {{ e.n_doubt }} / {{ e.n_accepted }}</td><td>{{ e.max_score|fmt }}</td>
+<td>{% if e.frame_zone %}<span class="badge z-{{ e.frame_zone }}">{{ e.frame_zone }}</span>{% else %}—{% endif %}</td>
+<td>{{ e.inference_ms|fmt(1) }}</td><td>{{ e.capture_reason or '—' }}</td>
+<td><a class="mono" href="/ventanas/{{ e.window_id }}">{{ e.window_id.split('-')[-1] }}</a></td></tr>
+{% endfor %}</table></div>
+<p>{% if page > 1 %}<a href="?run_id={{ f.run_id }}&status={{ f.status }}&zone={{ f.zone }}&captured={{ 'true' if f.captured else '' }}&page={{ page-1 }}">← anterior</a>{% endif %}
+{% if page < pages %} <a href="?run_id={{ f.run_id }}&status={{ f.status }}&zone={{ f.zone }}&captured={{ 'true' if f.captured else '' }}&page={{ page+1 }}">siguiente →</a>{% endif %}</p>
+{% endif %}
+{% endblock %}

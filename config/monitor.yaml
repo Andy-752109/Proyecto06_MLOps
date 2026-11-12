@@ -1,0 +1,73 @@
+# Configuración de monitoreo versionada.
+# config_ref = "cfg-" + primeros 12 hex del SHA-256 de las secciones model, policy,
+# windows, reference, alerts y capture (ver src/monitor/config.py). La sección
+# "source" se identifica aparte (source_ref) para que C1 y C2 compartan config_ref.
+
+config_version: v1
+
+model:
+  name: yolov8n
+  path: modelo/yolov8n.pt
+  sha256: f59b3d833e2ff32e194b5bb8e08d211dc7c5bdf144b90d2c8412c47ccfc83b36
+  version: "yolov8n · ultralytics/assets release v8.3.0 (pesos COCO preentrenados)"
+  task: detection
+  classes: {0: person}        # filtro de clases aplicado en la inferencia
+  imgsz: 640                   # letterbox a 640 px (preprocesamiento de Ultralytics)
+  conf_floor: 0.10             # piso de salida: candidatas con s < 0.10 no se reportan
+  nms_iou: 0.45                # IoU de NMS
+  max_det: 100
+  device: cpu                  # CPU para reproducibilidad (MPS no es determinista)
+
+policy:
+  unit: detection              # la zona se asigna a cada detección candidata
+  lower: 0.40                  # s < 0.40  -> low
+  upper: 0.70                  # 0.40 <= s < 0.70 -> doubt ; s >= 0.70 -> accepted
+  justification: evidencias/referencia/justificacion-umbrales.md
+
+windows:
+  size_frames: 20              # ventanas consecutivas de 20 frames procesados (~4 s a 5 fps)
+  min_frames: 15               # mínimo de frames con inferencia válida para evaluar
+  min_detections: 30           # mínimo de detecciones puntuadas para evaluar proporciones
+
+reference:
+  path: config/reference.json  # generado por scripts/build_reference.py
+
+alerts:
+  - rule_id: baja-confianza-v1
+    severity: warning
+    metric: low_prop           # n_low / n_dets de la ventana
+    condition: ">= 0.40"
+    threshold: 0.40
+    persistence_windows: 1
+    suggested_action: >-
+      Revisar las capturas vinculadas: enfoque, iluminación, oclusión y limpieza de la
+      lente. Verificar que modelo y preprocesamiento no cambiaron.
+  - rule_id: cambio-sostenido-v1
+    severity: high
+    metric: low_prop_delta     # low_prop(ventana) - low_prop(referencia)
+    condition: ">= 0.15 durante 3 ventanas elegibles consecutivas"
+    threshold: 0.15
+    persistence_windows: 3
+    suggested_action: >-
+      Posible cambio de condiciones respecto a la referencia. Comparar capturas con la
+      referencia y revisar la escena y la cámara; la confianza no confirma pérdida de calidad.
+  - rule_id: evidencia-insuficiente-v1
+    severity: info
+    metric: window_state
+    condition: "ventana insuficiente durante 3 ventanas consecutivas"
+    threshold: null
+    persistence_windows: 3
+    suggested_action: >-
+      No hay observaciones suficientes para evaluar confianza. Revisar la fuente,
+      la escena y si el detector entrega candidatas; no interpretar como operación normal.
+
+capture:
+  jpeg_quality: 85
+  normal_sample_every: 10      # muestra de operación normal: 1 de cada 10 frames procesados
+  flagged_min_gap: 3           # frames low/doubt/sin detecciones/error: como máximo 1 cada 3
+  on_alert: true               # siempre se captura el último frame de la ventana que abre una alerta
+  expiration: none             # sin expiración automática
+
+storage:
+  db: evidencias/monitor.db
+  runs_dir: evidencias/runs

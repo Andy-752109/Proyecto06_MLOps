@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}{{ a.alert_id }}{% endblock %}
+{% block content %}
+<h1>Alerta <span class="mono">{{ a.alert_id }}</span> <span class="badge s-{{ a.severity }}">{{ a.severity }}</span> <span class="badge st-{{ a.status }}">{{ a.status }}</span></h1>
+<div class="grid" style="grid-template-columns:1fr 1fr">
+<div class="card"><dl class="kv">
+  <dt>Regla</dt><dd><b>{{ a.rule_id }}</b> — {{ a.condition }}</dd>
+  <dt>Abierta</dt><dd class="mono">{{ a.opened_at }}</dd>
+  <dt>Resuelta</dt><dd class="mono">{{ a.resolved_at or 'sigue abierta al final de la ejecución' }}</dd>
+  <dt>Motivo</dt><dd>{{ a.reason }}</dd>
+  <dt>Acción sugerida</dt><dd>{{ a.suggested_action }}</dd>
+  <dt>Ejecución</dt><dd><a href="/ejecuciones/{{ a.run_id }}">{{ a.run_id }}</a></dd>
+  <dt>Fuente / modelo</dt><dd class="mono">{{ a.source_id }} · {{ a.model_ref }}</dd>
+  <dt>Configuración</dt><dd><a class="mono" href="/config/{{ a.config_ref }}">{{ a.config_ref }}</a></dd>
+</dl></div>
+<div class="card">
+{% if rule %}<dl class="kv"><dt>Métrica</dt><dd>{{ rule.metric }}</dd><dt>Umbral</dt><dd>{{ rule.threshold }}</dd>
+<dt>Persistencia</dt><dd>{{ rule.persistence_windows }} ventana(s) elegible(s)</dd><dt>Datos insuficientes</dt>
+<dd>las ventanas <i>insufficient</i> no abren, no extienden ni resuelven alertas de confianza</dd></dl>{% endif %}
+</div></div>
+<h2>Ventanas que originan y sostienen la alerta</h2>
+<div class="wrap"><table><tr><th>Ventana</th><th>Estado</th><th>Frames válidos</th><th>Detecciones</th><th>Bajas</th><th>low_prop</th><th>Referencia</th><th>Delta</th></tr>
+{% for o in a.observed.windows %}<tr><td><a class="mono" href="/ventanas/{{ o.window_id }}">{{ o.window_id }}</a></td><td>{{ o.state }}</td>
+<td>{{ o.n_valid }}</td><td>{{ o.n_dets }}</td><td>{{ o.n_low }}</td><td>{{ o.low_prop|fmt }}</td><td>{{ o.ref_low_prop|fmt }}</td><td>{{ o.delta|fmt }}</td></tr>{% endfor %}
+{% if a.observed.resolved_by %}{% set o = a.observed.resolved_by %}<tr><td><a class="mono" href="/ventanas/{{ o.window_id }}">{{ o.window_id }}</a> (resuelve)</td><td>{{ o.state }}</td>
+<td>{{ o.n_valid }}</td><td>{{ o.n_dets }}</td><td>{{ o.n_low }}</td><td>{{ o.low_prop|fmt }}</td><td>{{ o.ref_low_prop|fmt }}</td><td>{{ o.delta|fmt }}</td></tr>{% endif %}
+</table></div>
+<h2>Capturas vinculadas ({{ captured|length }})</h2>
+{% if not captured %}<div class="empty">Sin capturas vinculadas.</div>{% else %}
+<div class="grid">{% for e in captured %}<div class="card"><a href="/eventos/{{ e.event_id }}"><img class="thumb" loading="lazy" src="/evidencia/{{ e.image_ref }}" alt="{{ e.event_id }}"></a>
+<div class="mono">{{ e.event_id.split('-')[-1] }} · {{ e.capture_reason }}</div><div>máx {{ e.max_score|fmt }} · baja {{ e.n_low }}/{{ e.n_detections }}</div></div>{% endfor %}</div>{% endif %}
+<h2>Eventos de origen ({{ events|length }})</h2>
+<div class="wrap"><table><tr><th>Evento</th><th>Estado</th><th>Det.</th><th>Baja / duda / acept.</th><th>Máx. s</th><th>Captura</th></tr>
+{% for e in events %}<tr><td><a class="mono" href="/eventos/{{ e.event_id }}">{{ e.event_id }}</a></td><td>{{ e.status }}</td><td>{{ e.n_detections }}</td>
+<td>{{ e.n_low }} / {{ e.n_doubt }} / {{ e.n_accepted }}</td><td>{{ e.max_score|fmt }}</td><td>{{ e.capture_reason or '—' }}</td></tr>{% endfor %}</table></div>
+<p><a href="/api/alertas/{{ a.alert_id }}">JSON de la alerta</a></p>
+{% endblock %}

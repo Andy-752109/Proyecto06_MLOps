@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Ejecuciones</h1>
+{% if not runs %}<div class="empty">Sin ejecuciones registradas.</div>{% else %}
+<div class="wrap"><table>
+<tr><th>Ejecución</th><th>Escenario</th><th>Inicio (UTC)</th><th>Fuente</th><th>Modelo</th><th>Config</th>
+<th>Eventos</th><th>Detecciones</th><th>low_prop</th><th>Alertas</th><th>Commit</th></tr>
+{% for r in runs %}{% set s = r.summary or {} %}
+<tr><td><a href="/ejecuciones/{{ r.run_id }}">{{ r.run_id }}</a></td><td>{{ r.scenario }}</td>
+<td class="mono">{{ r.started_at }}</td><td>{{ r.source_id }}</td><td class="mono">{{ r.model_ref }}</td>
+<td><a class="mono" href="/config/{{ r.config_ref }}">{{ r.config_ref }}</a></td>
+<td><a href="/eventos?run_id={{ r.run_id }}">{{ s.events }}</a></td><td>{{ s.detections }}</td>
+<td>{{ s.low_prop_run|fmt }}</td><td><a href="/alertas?run_id={{ r.run_id }}">{{ r.n_alerts }}</a></td>
+<td class="mono">{{ (r.git_commit or '')[:8] }}{% if r.git_dirty %}*{% endif %}</td></tr>
+{% endfor %}</table></div>{% endif %}
+<h2>Últimas alertas</h2>
+{% if not latest %}<div class="empty">Sin alertas.</div>{% else %}
+<div class="wrap"><table><tr><th>Alerta</th><th>Momento</th><th>Regla</th><th>Severidad</th><th>Estado</th><th>Motivo</th></tr>
+{% for a in latest %}<tr><td><a href="/alertas/{{ a.alert_id }}">{{ a.alert_id }}</a></td><td class="mono">{{ a.opened_at }}</td>
+<td>{{ a.rule_id }}</td><td><span class="badge s-{{ a.severity }}">{{ a.severity }}</span></td>
+<td><span class="badge st-{{ a.status }}">{{ a.status }}</span></td><td>{{ a.reason }}</td></tr>{% endfor %}
+</table></div>{% endif %}
+{% endblock %}

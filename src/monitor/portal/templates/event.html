@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{{ ev.event_id }}{% endblock %}
+{% block content %}
+<h1>Evento <span class="mono">{{ ev.event_id }}</span></h1>
+<p>{% if prev %}<a href="/eventos/{{ prev }}">← anterior</a>{% endif %} {% if next %}<a href="/eventos/{{ next }}">siguiente →</a>{% endif %}</p>
+<div class="grid" style="grid-template-columns:minmax(300px,2fr) minmax(280px,1fr)">
+<div class="card">
+{% if ev.image_ref %}
+  <svg viewBox="0 0 768 576" style="width:100%;display:block">
+    <image href="/evidencia/{{ ev.image_ref }}" x="0" y="0" width="768" height="576"/>
+    {% for d in ev.detections %}{% set c = {'low':'#c0392b','doubt':'#d68910','accepted':'#1e8449'}[d.zone] %}
+    <rect x="{{ d.bbox_xyxy[0] }}" y="{{ d.bbox_xyxy[1] }}" width="{{ d.bbox_xyxy[2]-d.bbox_xyxy[0] }}" height="{{ d.bbox_xyxy[3]-d.bbox_xyxy[1] }}" fill="none" stroke="{{ c }}" stroke-width="2"/>
+    <text x="{{ d.bbox_xyxy[0]+2 }}" y="{{ d.bbox_xyxy[1]+12 }}" fill="{{ c }}" font-size="12" font-weight="700" stroke="#fff" stroke-width="0.4">{{ '%.2f'|format(d.score) }}</text>
+    {% endfor %}
+  </svg>
+  <p class="muted">Captura: <a href="/evidencia/{{ ev.image_ref }}" class="mono">{{ ev.image_ref }}</a> · motivo <b>{{ ev.capture_reason }}</b>. Cajas dibujadas desde las detecciones registradas (verde aceptada, ámbar duda, rojo baja).</p>
+{% else %}
+  <div class="empty">Este frame no se capturó según la política de captura (se conserva el evento y sus detecciones).</div>
+{% endif %}
+</div>
+<div class="card"><dl class="kv">
+  <dt>Ejecución</dt><dd><a href="/ejecuciones/{{ ev.run_id }}">{{ ev.run_id }}</a></dd>
+  <dt>Frame</dt><dd class="mono">{{ ev.frame_id }} (índice {{ ev.frame_index }}, {{ ev.pts_s }} s)</dd>
+  <dt>Capturado</dt><dd class="mono">{{ ev.captured_at }}</dd>
+  <dt>Inferido</dt><dd class="mono">{{ ev.inferred_at }}</dd>
+  <dt>Fuente</dt><dd>{{ ev.source_id }}</dd>
+  <dt>Tarea</dt><dd>{{ ev.task }}</dd>
+  <dt>Modelo</dt><dd class="mono">{{ ev.model_ref }}<br>{{ ev.model_sha256 }}</dd>
+  <dt>Configuración</dt><dd><a class="mono" href="/config/{{ ev.config_ref }}">{{ ev.config_ref }}</a> (inferior {{ policy.lower }}, superior {{ policy.upper }})</dd>
+  <dt>Estado</dt><dd><span class="badge st-{{ ev.status }}">{{ ev.status }}</span> {{ ev.error or '' }}</dd>
+  <dt>Detecciones</dt><dd>{{ ev.n_detections }} (baja {{ ev.n_low }}, duda {{ ev.n_doubt }}, aceptada {{ ev.n_accepted }})</dd>
+  <dt>Máx. puntuación</dt><dd>{{ ev.max_score|fmt }} {% if ev.frame_zone %}<span class="badge z-{{ ev.frame_zone }}">{{ ev.frame_zone }}</span>{% endif %}</dd>
+  <dt>Tiempos</dt><dd>inferencia {{ ev.inference_ms|fmt(1) }} ms · cola {{ ev.queue_ms|fmt(1) }} ms · extremo a extremo {{ ev.e2e_ms|fmt(1) }} ms</dd>
+  <dt>Ventana</dt><dd><a class="mono" href="/ventanas/{{ ev.window_id }}">{{ ev.window_id }}</a></dd>
+  <dt>Alertas</dt><dd>{% for a in alerts %}<a href="/alertas/{{ a.alert_id }}">{{ a.alert_id }}</a> ({{ a.rule_id }})<br>{% else %}ninguna{% endfor %}</dd>
+</dl></div>
+</div>
+<h2>Detecciones candidatas</h2>
+{% if not ev.detections %}<div class="empty">Sin detecciones: estado <b>{{ ev.status }}</b>, sin puntuación asignada.</div>{% else %}
+<div class="wrap"><table><tr><th>ID</th><th>Clase</th><th>Puntuación</th><th>Zona</th><th>Caja xyxy (px)</th></tr>
+{% for d in ev.detections %}<tr><td class="mono">{{ d.det_id }}</td><td>{{ d.class_name }} ({{ d.class_id }})</td><td>{{ '%.4f'|format(d.score) }}</td>
+<td><span class="badge z-{{ d.zone }}">{{ d.zone }}</span></td><td class="mono">{{ d.bbox_xyxy }}</td></tr>{% endfor %}</table></div>{% endif %}
+<p><a href="/api/eventos/{{ ev.event_id }}">JSON del evento</a></p>
+{% endblock %}
