@@ -18,6 +18,7 @@ la evidencia.
 | Persistencia | SQLite (`evidencias/monitor.db`) + JSONL por ejecución + JPEG |
 | Portal | FastAPI + Jinja2: vistas de eventos y alertas, con detalle de evento, alerta, ventana, ejecución y configuración. Adicional: tablero histórico `/tablero` (ver [`EXTRAS.md`](EXTRAS.md)) |
 | Escenarios base | **C1** operación normal · **C2** baja confianza (desenfoque óptico real de la entrada) |
+| Escenario adicional | **S1** interrupción del stream con reconexión y recuperación (ver [`EXTRAS.md`](EXTRAS.md)) |
 
 **Índice de evidencias y mapa de criterios:** [`evidencias/indice.md`](evidencias/indice.md)
 
@@ -47,7 +48,7 @@ la evidencia.
 
 | Módulo | Responsabilidad |
 |---|---|
-| `src/monitor/source.py` | Reproduce el video como stream y cuenta lecturas, fallos y descartes |
+| `src/monitor/source.py` | Reproduce el video como stream y cuenta lecturas, fallos y descartes. En S1: corte inyectado, reconexión y watchdog de huecos |
 | `src/monitor/detector.py` | Carga el modelo, verifica su SHA-256 y mide el tiempo de inferencia |
 | `src/monitor/policy.py` | Asigna las tres zonas y resume cada frame |
 | `src/monitor/rules.py` | Estado de la ventana, reglas y ciclo de vida de las alertas |
@@ -106,7 +107,12 @@ uvicorn monitor.portal.app:app --port 8000      # http://127.0.0.1:8000
 # 6) Recorrido del portal con capturas de pantalla (evidencia)
 python scripts/capture_portal.py --c1 <id-c1> --c2 <id-c2>
 
-# 7) Adicional F1: verificación del tablero contra los JSONL + recorrido en el navegador
+# 7) Adicional S1: interrupción del stream (~40 s) y verificación por etapas contra C1
+python -m monitor.pipeline --scenario s1-interrupcion
+python scripts/recalc_metrics.py --run-id <id-s1>
+python scripts/verify_s1.py --run-id <id-s1> --c1 <id-c1>
+
+# 8) Adicional F1: verificación del tablero contra los JSONL + recorrido en el navegador
 python scripts/verify_dashboard.py --run-id <id-c2> --run-id <id-c1> --run-id <id-referencia>
 ```
 
@@ -127,7 +133,8 @@ siempre escribe en la base configurada en `config/monitor.yaml → storage`.
 - `config/monitor.yaml`: modelo, umbrales (0.40 / 0.70), ventanas (20 frames, mínimos 15 frames
   y 30 detecciones), reglas de alerta, política de captura y almacenamiento. Su hash es el `config_ref`.
 - `config/scenarios.yaml`: fuente de cada escenario (ruta, SHA-256, tramo de frames,
-  muestreo, cola). C1 y C2 comparten el `config_ref` y solo difieren en la fuente.
+  muestreo, cola). C1 y C2 comparten el `config_ref` y solo difieren en la fuente. S1 también
+  lo comparte; su fuente declara además la falla inyectada y el watchdog.
 - `config/reference.json`: referencia generada a partir de observaciones reales.
 
 ## Autoría, aportación propia y componentes reutilizados

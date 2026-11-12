@@ -43,3 +43,30 @@ c2-baja-confianza:
     queue_maxsize: 4
     start_frame: 400
     end_frame: null
+
+# ---------------------------------------------------------------- escenarios adicionales
+# No forman parte de la base. Usan la misma configuración (config_ref) que C1/C2; lo que
+# cambia es la fuente (source_ref), que declara la falla inyectada y el watchdog.
+
+s1-interrupcion:
+  description: >-
+    S1 · Interrupción y recuperación del stream: el tramo de C1 pierde la conexión en el
+    frame 500 durante 15 s; la fuente reintenta cada 2 s y retoma en la posición en vivo.
+  evaluate_rules: true
+  source:
+    source_id: video-vtest-01
+    type: video_file
+    path: data/videos/vtest.avi
+    sha256: 45cddc9490be69345cbdab64ca583be65987e864ca408038e648db99e10516cf
+    playback: realtime
+    sample_every: 2
+    queue_maxsize: 4
+    start_frame: 400
+    end_frame: null
+    watchdog:
+      gap_after_s: 1.0         # tras 1 s sin frames, cada frame esperado (0.2 s) es un hueco
+    fault_injection:
+      outage:
+        at_frame: 500          # 10 s después del inicio del tramo
+        duration_s: 15
+        reconnect_every_s: 2

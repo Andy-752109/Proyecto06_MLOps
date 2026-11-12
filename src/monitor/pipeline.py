@@ -20,7 +20,7 @@ from .detector import PersonDetector, file_sha256
 from .metrics import VALID, compute_window_metrics
 from .policy import frame_summary
 from .rules import RuleEngine, window_state
-from .source import VideoStreamSource, utc_now
+from .source import SourceGap, VideoStreamSource, utc_now
 from .store import RunStore, connect
 
 
@@ -122,7 +122,35 @@ class Monitor:
         return self._finish(source, elapsed)
 
     # ---------------------------------------------------------- per frame
+    def _process_gap(self, gap: SourceGap) -> None:
+        """Frame esperado que no llegó: evento sin frame, sin inferencia y sin puntuación."""
+        seq = self.seq
+        self.seq += 1
+        event_id = f"{self.run_id}-e{seq:05d}"
+        wd = self.sc["source"]["watchdog"]["gap_after_s"]
+        self.win_events.append({
+            "event_id": event_id, "run_id": self.run_id, "seq": seq,
+            "frame_id": None, "frame_index": None, "pts_s": None,
+            "window_id": f"{self.run_id}-w{self.win_idx:03d}",
+            "captured_at": gap.detected_at, "inferred_at": gap.detected_at,
+            "source_id": self.sc["source"]["source_id"], "task": "detection",
+            "model_ref": self.detector.model_ref, "model_sha256": None,
+            "config_ref": self.cfg["config_ref"], "status": "source_gap",
+            "error": f"sin frames de la fuente durante {gap.silent_s:.1f} s "
+                     f"(watchdog {wd} s; hueco {gap.slot} de este silencio)",
+            "n_detections": 0, "n_low": 0, "n_doubt": 0, "n_accepted": 0,
+            "max_score": None, "frame_zone": None,
+            "inference_ms": None, "queue_ms": None, "e2e_ms": None,
+            "image_ref": None, "capture_reason": None, "detections": [],
+        })
+        mem = self.proc.memory_info().rss / 2**20
+        self.win_res.append({"run_id": self.run_id, "seq": seq, "event_id": event_id,
+                             "ts": utc_now(), "rss_mb": round(mem, 3),
+                             "cpu_percent": self.proc.cpu_percent(None)})
+
     def _process(self, frame) -> None:
+        if isinstance(frame, SourceGap):
+            return self._process_gap(frame)
         cfg = self.cfg
         dequeued = time.perf_counter()
         seq = self.seq
@@ -220,7 +248,9 @@ class Monitor:
             evals, new, updated = self.engine.evaluate(win)
             for a in new:
                 last = evs[-1]
-                if self.cfg["capture"]["on_alert"] and not last["image_ref"]:
+                # un hueco de la fuente no tiene imagen: no se adjunta un frame anterior
+                if self.cfg["capture"]["on_alert"] and not last["image_ref"] \
+                        and last["status"] != "source_gap":
                     last["image_ref"] = self._save_image(last["event_id"], self.last_image[1])
                     last["capture_reason"] = "alerta"
             for a in new + updated:
@@ -272,9 +302,11 @@ class Monitor:
             "elapsed_s": round(elapsed, 3),
             "source": {"native_fps": st.native_fps, "frames_read": st.read,
                        "read_failures": st.read_failures, "frames_selected": st.selected,
-                       "dropped": st.dropped},
+                       "dropped": st.dropped,
+                       **({"gaps": st.gaps, "events": len(st.events)} if st.events or st.gaps else {})},
             "events": len(evs),
-            "by_status": {s: sum(e["status"] == s for e in evs) for s in ("ok", "no_detections", "error")},
+            "by_status": {s: sum(e["status"] == s for e in evs)
+                          for s in ("ok", "no_detections", "error") + (("source_gap",) if st.gaps else ())},
             "detections": n_dets,
             "by_zone": {z: sum(e[f"n_{z}"] for e in valid) for z in ("low", "doubt", "accepted")},
             "low_prop_run": round(sum(e["n_low"] for e in valid) / n_dets, 6) if n_dets else None,
@@ -287,6 +319,10 @@ class Monitor:
             "alerts": [{"alert_id": a["alert_id"], "rule_id": a["rule_id"], "status": a["status"],
                         "severity": a["severity"]} for a in self.alerts.values()],
         }
+        for i, se in enumerate(st.events):
+            self.store.insert("source_events", {"run_id": self.run_id, "seq": i, "ts": se["ts"],
+                                                "kind": se["kind"],
+                                                "detail": {k: v for k, v in se.items() if k not in ("ts", "kind")}})
         self.manifest.update(ended_at=utc_now(), status="completed", summary=summary)
         self.con.execute("UPDATE runs SET ended_at=?, status=?, summary_json=? WHERE run_id=?",
                          (self.manifest["ended_at"], "completed", json.dumps(summary), self.run_id))

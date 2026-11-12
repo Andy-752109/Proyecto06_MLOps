@@ -22,6 +22,13 @@ BASE_METRICS = {
 
 REQUIRED_FIELDS = ("event_id", "run_id", "frame_id", "captured_at", "inferred_at", "source_id",
                    "task", "model_ref", "model_sha256", "config_ref", "status", "window_id")
+# Un hueco de la fuente (source_gap) no tiene frame ni inferencia: no lleva frame_id ni la
+# versión reportada por el modelo, pero sí el detalle del hueco en `error`.
+GAP_EXEMPT = ("frame_id", "model_sha256")
+
+
+def required_fields(status: str | None) -> tuple:
+    return tuple(f for f in REQUIRED_FIELDS if status != "source_gap" or f not in GAP_EXEMPT)
 
 
 def parse_ts(ts: str) -> float:
@@ -40,7 +47,7 @@ def percentile_nearest_rank(values: list[float], p: float) -> float | None:
 def event_is_traceable(ev: dict, known_configs: set, root: Path) -> tuple[bool, list[str]]:
     """Un evento es trazable si tiene todos los campos obligatorios, su config_ref existe,
     su contenido es coherente con su estado y su image_ref (si existe) resuelve a un archivo."""
-    problems = [f for f in REQUIRED_FIELDS if ev.get(f) in (None, "")]
+    problems = [f for f in required_fields(ev.get("status")) if ev.get(f) in (None, "")]
     if ev.get("config_ref") not in known_configs:
         problems.append("config_ref_no_resuelve")
     dets = ev.get("detections") or []
@@ -50,8 +57,10 @@ def event_is_traceable(ev: dict, known_configs: set, root: Path) -> tuple[bool, 
         problems.append("detecciones_incoherentes")
     if st == "no_detections" and (dets or ev.get("max_score") is not None):
         problems.append("sin_detecciones_incoherente")
-    if st == "error" and not ev.get("error"):
+    if st in ("error", "source_gap") and not ev.get("error"):
         problems.append("error_sin_detalle")
+    if st == "source_gap" and (dets or ev.get("image_ref") or ev.get("max_score") is not None):
+        problems.append("hueco_incoherente")
     if ev.get("image_ref") and not (root / ev["image_ref"]).is_file():
         problems.append("image_ref_no_resuelve")
     return (not problems), problems

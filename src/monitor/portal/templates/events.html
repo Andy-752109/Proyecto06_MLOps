@@ -6,7 +6,7 @@
   <label>Ejecución<select name="run_id"><option value="">(todas)</option>
     {% for r in run_ids %}<option {% if r == f.run_id %}selected{% endif %}>{{ r }}</option>{% endfor %}</select></label>
   <label>Estado<select name="status"><option value="">(todos)</option>
-    {% for s in ["ok","no_detections","error"] %}<option {% if s == f.status %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></label>
+    {% for s in ["ok","no_detections","error","source_gap"] %}<option {% if s == f.status %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></label>
   <label>Zona del frame<select name="zone"><option value="">(todas)</option>
     {% for z in ["low","doubt","accepted"] %}<option {% if z == f.zone %}selected{% endif %}>{{ z }}</option>{% endfor %}</select></label>
   <label>Solo con captura<input type="checkbox" name="captured" value="true" {% if f.captured %}checked{% endif %}></label>

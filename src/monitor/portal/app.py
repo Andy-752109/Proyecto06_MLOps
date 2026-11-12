@@ -79,6 +79,13 @@ def query_alerts(run_id, status, rule_id):
     return rows(f"SELECT * FROM alerts {clause} ORDER BY opened_at DESC", args)
 
 
+def source_events(run_id: str) -> list[dict]:
+    with db() as con:  # bases anteriores al escenario S1 no tienen la tabla
+        if not con.execute("SELECT 1 FROM sqlite_master WHERE name='source_events'").fetchone():
+            return []
+    return rows("SELECT * FROM source_events WHERE run_id=? ORDER BY seq", (run_id,))
+
+
 def alerts_for_event(event_id: str) -> list[dict]:
     return [a for a in rows("SELECT * FROM alerts WHERE event_ids_json LIKE ?", (f'%"{event_id}"%',))
             if event_id in a["event_ids"]]
@@ -156,7 +163,10 @@ def run_page(request: Request, run_id: str):
     return templates.TemplateResponse(request, "run.html", {
         "run": run, "windows": wins, "by_win": by_win,
         "metric_ids": sorted({m["metric_id"] for m in mets}),
-        "alerts": rows("SELECT * FROM alerts WHERE run_id=? ORDER BY opened_at", (run_id,))})
+        "alerts": rows("SELECT * FROM alerts WHERE run_id=? ORDER BY opened_at", (run_id,)),
+        "source_events": source_events(run_id),
+        "n_gaps": rows("SELECT COUNT(*) AS n FROM events WHERE run_id=? AND status='source_gap'",
+                       (run_id,))[0]["n"]})
 
 
 @app.get("/config/{config_ref}", response_class=HTMLResponse)

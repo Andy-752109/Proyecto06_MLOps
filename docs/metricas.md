@@ -116,6 +116,11 @@ Reglas comunes a todas las métricas:
      puntuación y zona, y `n_detections` igual al largo de la lista; `no_detections` tiene la
      lista vacía y `max_score = null`; `error` incluye el detalle del error;
   4. si tiene `image_ref`, ese archivo existe.
+
+  Un hueco de la fuente (`source_gap`, solo en el escenario adicional S1) no tiene frame ni
+  inferencia: no se le exigen `frame_id` ni `model_sha256`, pero debe traer el detalle del
+  hueco en `error`, ninguna detección y ninguna imagen. En C1/C2 no hay huecos y la definición
+  no cambia.
 - **M2 · Adquisición**: se evalúa al cerrar cada ventana, cuando ya se guardaron sus
   capturas (`metrics.event_is_traceable`).
 - **M3 · Cálculo**: trazables / eventos. Si no hay eventos, da `null` (`no_data`).
@@ -128,7 +133,8 @@ Reglas comunes a todas las métricas:
 
 - **M1 · Definición**: la proporción de eventos de la ventana cuyo `model_sha256` reportado
   (el SHA-256 calculado sobre el archivo de pesos que **realmente se cargó**) coincide con el
-  `model.sha256` esperado en la configuración. Población: eventos con `model_sha256`. Hay
+  `model.sha256` esperado en la configuración. Población: eventos con `model_sha256` (un hueco
+  `source_gap` no invoca el modelo, así que no reporta versión y queda fuera). Hay
   una sola fuente y una sola versión de modelo por ejecución. La métrica deja ver si se
   reemplazó el artefacto sin actualizar la configuración.
 - **M2 · Adquisición**: `detector.file_sha256` al cargar el modelo. Cada evento lo reporta.

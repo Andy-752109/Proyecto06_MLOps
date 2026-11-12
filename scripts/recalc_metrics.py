@@ -80,13 +80,17 @@ def recalc(run_id: str, cfg: dict) -> dict:
         r["g4_low_conf_prop"] = r["low_prop"]
         traceable = 0
         for e in g.itertuples():
-            fields_ok = all(pd.notna(getattr(e, f)) and getattr(e, f) != "" for f in
-                            ("event_id", "run_id", "frame_id", "captured_at", "inferred_at", "source_id",
-                             "task", "model_ref", "model_sha256", "config_ref", "status", "window_id"))
+            fields = ("event_id", "run_id", "frame_id", "captured_at", "inferred_at", "source_id",
+                      "task", "model_ref", "model_sha256", "config_ref", "status", "window_id")
+            if e.status == "source_gap":  # hueco de la fuente: sin frame ni versión reportada
+                fields = tuple(f for f in fields if f not in ("frame_id", "model_sha256"))
+            fields_ok = all(pd.notna(getattr(e, f)) and getattr(e, f) != "" for f in fields)
             img_ok = (not isinstance(e.image_ref, str)) or (ROOT / e.image_ref).is_file()
             cfg_ok = e.config_ref == manifest["config_ref"]
             st_ok = (e.status != "ok" or (e.n_det_r == e.n_detections and e.n_det_r > 0)) and \
-                    (e.status != "no_detections" or e.n_det_r == 0)
+                    (e.status != "no_detections" or e.n_det_r == 0) and \
+                    (e.status != "source_gap" or (e.n_det_r == 0 and isinstance(e.error, str)
+                                                  and not isinstance(e.image_ref, str)))
             traceable += fields_ok and img_ok and cfg_ok and st_ok
         r["g5_trace_coverage"] = traceable / len(g) if len(g) else None
         rep = g["model_sha256"].dropna()
@@ -125,6 +129,23 @@ def recalc(run_id: str, cfg: dict) -> dict:
         fired_stored = [a["first_window_id"] for a in alerts if a["rule_id"] == "baja-confianza-v1"]
         checks.append({"what": "baja-confianza-v1 ventanas de apertura", "stored": fired_stored,
                        "recalc": fired_expected, "ok": fired_stored == fired_expected})
+        # Evidencia insuficiente: (primera ventana de la racha, ventana que la resuelve)
+        rule_ins = next(r for r in snap["alerts"] if r["rule_id"] == "evidencia-insuficiente-v1")
+        ins_expected, streak, cur = [], [], None
+        for r in rows:
+            if r["state"] == "insufficient":
+                streak.append(r["window_id"])
+                if cur is None and len(streak) >= rule_ins["persistence_windows"]:
+                    cur = [streak[-rule_ins["persistence_windows"]], None]
+                    ins_expected.append(cur)
+            else:
+                streak = []
+                if cur is not None:
+                    cur[1], cur = r["window_id"], None
+        ins_stored = [[a["first_window_id"], (a["observed"].get("resolved_by") or {}).get("window_id")]
+                      for a in alerts if a["rule_id"] == "evidencia-insuficiente-v1"]
+        checks.append({"what": "evidencia-insuficiente-v1 (apertura, resolución)", "stored": ins_stored,
+                       "recalc": ins_expected, "ok": ins_stored == ins_expected})
     # Referencias de imágenes de alertas
     missing = [p for a in alerts for p in a["image_refs"] if not (ROOT / p).is_file()]
     checks.append({"what": "image_refs de alertas resuelven", "stored": len(missing), "recalc": 0,
@@ -140,6 +161,7 @@ def recalc(run_id: str, cfg: dict) -> dict:
         "inference_ms_p95": nearest_rank(ev.loc[ev["valid"], "inference_ms"].dropna().tolist(), 95),
         "frames_without_detections": int((ev["status"] == "no_detections").sum()),
         "errors": int((ev["status"] == "error").sum()),
+        "source_gaps": int((ev["status"] == "source_gap").sum()),
         "captures": int(ev["image_ref"].notna().sum()),
     }
     failed = [c for c in checks if not c["ok"]]

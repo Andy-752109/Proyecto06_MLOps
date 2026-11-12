@@ -41,6 +41,8 @@ CREATE TABLE IF NOT EXISTS metric_values (
 CREATE TABLE IF NOT EXISTS rule_evaluations (
   run_id TEXT, window_id TEXT, rule_id TEXT, outcome TEXT, observed_json TEXT, alert_id TEXT,
   PRIMARY KEY (window_id, rule_id));
+CREATE TABLE IF NOT EXISTS source_events (
+  run_id TEXT, seq INTEGER, ts TEXT, kind TEXT, detail_json TEXT, PRIMARY KEY (run_id, seq));
 CREATE TABLE IF NOT EXISTS alerts (
   alert_id TEXT PRIMARY KEY, run_id TEXT, rule_id TEXT, severity TEXT, status TEXT,
   opened_at TEXT, resolved_at TEXT, first_window_id TEXT, last_window_id TEXT,
@@ -91,7 +93,7 @@ class RunStore:
         "events": "events.jsonl", "detections": "detections.jsonl",
         "resource_samples": "resources.jsonl", "windows": "windows.jsonl",
         "metric_values": "metrics.jsonl", "rule_evaluations": "rule_evaluations.jsonl",
-        "alerts": "alerts.jsonl",
+        "alerts": "alerts.jsonl", "source_events": "source_events.jsonl",
     }
 
     def __init__(self, con: sqlite3.Connection, run_dir: Path):

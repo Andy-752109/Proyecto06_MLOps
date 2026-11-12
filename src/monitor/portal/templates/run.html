@@ -6,7 +6,8 @@
 <div class="card"><dl class="kv">
 <dt>Escenario</dt><dd>{{ run.scenario }} — {{ run.description }}</dd>
 <dt>Inicio / fin</dt><dd class="mono">{{ run.started_at }} → {{ run.ended_at }}</dd>
-<dt>Fuente</dt><dd class="mono">{{ run.source.path }} (frames {{ run.source.start_frame }}–{{ run.source.end_frame }}, 1 de cada {{ run.source.sample_every }})</dd>
+<dt>Fuente</dt><dd class="mono">{{ run.source.path }} (frames {{ run.source.start_frame }}–{{ run.source.end_frame if run.source.end_frame is not none else 'fin' }}, 1 de cada {{ run.source.sample_every }})</dd>
+{% if run.source.fault_injection or run.source.watchdog %}<dt>Falla inyectada</dt><dd class="mono">{{ run.source.fault_injection }} · watchdog {{ run.source.watchdog }}</dd>{% endif %}
 <dt>Modelo</dt><dd class="mono">{{ run.model_ref }}</dd>
 <dt>Entorno</dt><dd class="mono">{{ run.environment }}</dd>
 <dt>Configuración</dt><dd><a class="mono" href="/config/{{ run.config_ref }}">{{ run.config_ref }}</a></dd>
@@ -21,6 +22,11 @@
 <td>{{ w.n_events }}</td><td>{{ w.n_dets }}</td><td>{{ w.low_prop|fmt }}</td>
 {% for m in metric_ids %}{% set mv = by_win.get(w.window_id, {}).get(m) %}<td>{{ mv.value|fmt(3) if mv else '—' }}{% if mv and mv.status != 'ok' %} <span class="muted">({{ mv.status }})</span>{% endif %}</td>{% endfor %}</tr>{% endfor %}
 </table></div>
+{% if source_events %}<h2 id="fuente">Eventos de conexión de la fuente</h2>
+<div class="wrap"><table><tr><th>#</th><th>Momento (UTC)</th><th>Tipo</th><th>Detalle</th></tr>
+{% for s in source_events %}<tr><td>{{ s.seq }}</td><td class="mono">{{ s.ts }}</td><td>{{ s.kind }}</td><td class="mono">{{ s.detail }}</td></tr>{% endfor %}
+</table></div>
+<p class="muted">Huecos registrados por el watchdog: <a href="/eventos?run_id={{ run.run_id }}&status=source_gap">{{ n_gaps }} eventos <span class="mono">source_gap</span></a>.</p>{% endif %}
 <h2>Alertas</h2>
 {% if not alerts %}<div class="empty">Sin alertas en esta ejecución.</div>{% else %}
 <div class="wrap"><table><tr><th>Alerta</th><th>Regla</th><th>Severidad</th><th>Estado</th><th>Abierta</th><th>Resuelta</th></tr>

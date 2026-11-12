@@ -124,3 +124,28 @@ recálculo comprueban que cada `image_ref` resuelve a un archivo.
 | `alert_id`, `rule_id`, `timestamp`, `severity` | `alert_id`, `rule_id`, `opened_at` (+ `resolved_at`, `status`), `severity` |
 | `event_ids`, `config_ref` | `event_ids`, `window_ids`, `config_ref`, `image_refs`, `observed` |
 | `reason`, `suggested_action` | Iguales, más `condition` |
+
+## 8. Escenario adicional S1: interrupción de la fuente
+
+Esta sección solo aplica al escenario adicional `s1-interrupcion`. C1, C2 y la referencia no
+declaran `watchdog` ni `fault_injection`, así que se comportan igual que antes.
+
+- **Falla inyectada** (`config/scenarios.yaml → source.fault_injection.outage`): en el frame
+  500 la fuente libera la conexión. Reintenta cada 2 s; los intentos fallan mientras no
+  pasen 15 s. Al reconectar retoma en la posición en vivo, y los frames emitidos durante el
+  corte se cuentan como descarte `outage`. Cada transición (`connection_lost`,
+  `reconnect_failed`, `reconnected`) queda en la tabla `source_events` y en
+  `source_events.jsonl`.
+- **Watchdog** (`source.watchdog.gap_after_s: 1.0`): si pasan más de 1 s sin frames, cada
+  frame esperado (cada `sample_every / fps` = 0.2 s), incluidos los del periodo de gracia, se
+  registra como evento `source_gap`. Un `source_gap` no lleva frame, inferencia, puntuación ni
+  imagen, y sí el detalle del silencio en `error`.
+- **Ventanas**: siguen siendo de 20 eventos. Un hueco ocupa un lugar pero no es un frame
+  válido, así que una ventana con huecos tiene menos de 15 frames válidos y queda
+  **insuficiente**. Las reglas de confianza no se evalúan (`insufficient_evidence`) y, tras 3
+  ventanas insuficientes, se abre `evidencia-insuficiente-v1`. La alerta se resuelve en la
+  primera ventana elegible después de reconectar.
+- **Captura**: un hueco no tiene imagen. Si la ventana que abre una alerta termina en un hueco,
+  no se adjunta un frame anterior como si fuera de ese momento.
+- La falla y el watchdog forman parte de la fuente (`source_ref`), no de la configuración
+  de monitoreo: S1 comparte `config_ref` con C1/C2 y su resultado es comparable con C1.

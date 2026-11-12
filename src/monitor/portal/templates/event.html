@@ -15,7 +15,8 @@
   </svg>
   <p class="muted">Captura: <a href="/evidencia/{{ ev.image_ref }}" class="mono">{{ ev.image_ref }}</a> · motivo <b>{{ ev.capture_reason }}</b>. Cajas dibujadas desde las detecciones registradas (verde aceptada, ámbar duda, rojo baja).</p>
 {% else %}
-  <div class="empty">Este frame no se capturó según la política de captura (se conserva el evento y sus detecciones).</div>
+  {% if ev.status == 'source_gap' %}<div class="empty">Hueco de la fuente: el frame esperado no llegó, así que no hay imagen ni inferencia. {{ ev.error }}. Ver los eventos de conexión en la <a href="/ejecuciones/{{ ev.run_id }}#fuente">ejecución</a>.</div>
+  {% else %}<div class="empty">Este frame no se capturó según la política de captura (se conserva el evento y sus detecciones).</div>{% endif %}
 {% endif %}
 </div>
 <div class="card"><dl class="kv">
