@@ -165,9 +165,15 @@ def main() -> None:
            "| Caso | URL | HTTP esperado | HTTP | Texto esperado | Resultado |", "|---|---|---|---|---|---|"]
     md += [f"| {s['case']} | `{s['url']}` | {s['expected_status']} | {s['status']} | {s['expected_text']} | "
            f"{'ok' if s['ok'] else 'FALLA'} |" for s in st]
-    md += ["", "Los casos borde que las ejecuciones reales no producen (ventanas insuficientes, métricas "
-           "`no_data` como hueco, ejecución sin ventanas, configuraciones distintas separadas en grupos, "
-           "base inexistente) están en `tests/test_dashboard.py` sobre una base sintética.", "",
+    real = {r["run_id"]: r["summary"] for g in data["groups"] for r in g["runs"]}
+    edge = [f"`{rid}` ({s['n_insufficient']} ventanas insuficientes, {s['n_no_data']} métricas `no_data`)"
+            for rid, s in real.items() if s["n_insufficient"] or s["n_no_data"]]
+    md += ["", ("Casos borde con datos reales: " + ", ".join(edge) + ". Se dibujan como puntos huecos y ✕ "
+                "y están incluidos en las comprobaciones de la sección 1." if edge else
+                "Ninguna ejecución seleccionada tiene ventanas insuficientes ni métricas `no_data`."),
+           "", "Los casos que no ocurren en ejecuciones reales (ejecución sin ventanas, más de 3 ejecuciones "
+           "comparables, configuraciones distintas separadas en grupos, base inexistente) están en "
+           "`tests/test_dashboard.py` sobre una base sintética.", "",
            "## 3. Recorrido en el navegador", "", "| Captura | URL | Qué muestra |", "|---|---|---|"]
     md += [f"| `{s['png']}` | `{s['url']}` | {s['what']} |" for s in steps]
     (OUT / "verificacion.md").write_text("\n".join(md) + "\n")
