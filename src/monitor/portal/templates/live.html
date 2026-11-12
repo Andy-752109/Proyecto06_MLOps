@@ -7,8 +7,8 @@
 .health { display:inline-flex; gap:6px; align-items:center; padding:3px 10px; border-radius:12px; color:#fff; font-weight:600; }
 .h-en_curso { background:var(--accepted); } .h-hueco_fuente { background:#6c3483; } .h-detenido { background:var(--low); }
 .h-terminada { background:#566573; } .h-sin_ejecucion, .h-error { background:#7f8c8d; }
-.bar { height:8px; background:#e6e6e1; border-radius:4px; overflow:hidden; margin:3px 0 8px; }
-.bar > span { display:block; height:100%; background:#2a78d6; }
+.pbar { height:8px; background:#e6e6e1; border-radius:4px; overflow:hidden; margin:3px 0 8px; }
+.pbar > span { display:block; height:100%; background:#2a78d6; }
 #stage { position:relative; background:#111; border-radius:6px; overflow:hidden; align-self:start; }
 #stage svg { width:100%; display:block; }
 #stale { position:absolute; inset:0; display:none; align-items:center; justify-content:center;
@@ -34,9 +34,9 @@ Las cajas son las detecciones del último frame (verde aceptada, ámbar duda, ro
   <dt>Tiempos</dt><dd id="evt">—</dd>
 </dl></div>
 <div class="card" style="margin-top:10px"><b>Ventana en curso</b> <span id="win" class="mono"></span>
-  <div style="font-size:12px" id="winev"></div><div class="bar"><span id="barev" style="width:0"></span></div>
-  <div style="font-size:12px" id="winval"></div><div class="bar"><span id="barval" style="width:0"></span></div>
-  <div style="font-size:12px" id="windet"></div><div class="bar"><span id="bardet" style="width:0"></span></div>
+  <div style="font-size:12px" id="winev"></div><div class="pbar"><span id="barev" style="width:0"></span></div>
+  <div style="font-size:12px" id="winval"></div><div class="pbar"><span id="barval" style="width:0"></span></div>
+  <div style="font-size:12px" id="windet"></div><div class="pbar"><span id="bardet" style="width:0"></span></div>
   <div style="font-size:12px">Última ventana cerrada: <span id="lastwin">—</span></div>
 </div>
 <div class="card" style="margin-top:10px"><b>Alertas abiertas</b> <span id="nalerts"></span><div id="alerts" style="margin-top:4px">—</div></div>
