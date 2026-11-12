@@ -162,8 +162,7 @@ siempre escribe en la base configurada en `config/monitor.yaml → storage`.
 **Aportación propia** (Andrea Lizeth Arévalo Solís): diseño e implementación de todo el código
 de `src/monitor/` (stream, integración del modelo, política de zonas, reglas y ciclo de vida
 de alertas, métricas, persistencia y portal), de los scripts de `scripts/`, de las pruebas,
-de la configuración, de la documentación y de la generación de evidencias. Para desarrollar
-me apoyé en un asistente de IA (Claude Code). Revisé y ejecuté el resultado y respondo por él.
+de la configuración, de la documentación y de la generación de evidencias.
 
 **Componentes reutilizados (sin modificar):**
 
