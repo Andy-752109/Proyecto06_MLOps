@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}En vivo{% endblock %}
+{% block content %}
+<style>
+.live { display:grid; grid-template-columns:minmax(320px,2fr) minmax(280px,1fr); gap:12px; }
+@media (max-width:800px) { .live { grid-template-columns:1fr; } }
+.health { display:inline-flex; gap:6px; align-items:center; padding:3px 10px; border-radius:12px; color:#fff; font-weight:600; }
+.h-en_curso { background:var(--accepted); } .h-hueco_fuente { background:#6c3483; } .h-detenido { background:var(--low); }
+.h-terminada { background:#566573; } .h-sin_ejecucion, .h-error { background:#7f8c8d; }
+.bar { height:8px; background:#e6e6e1; border-radius:4px; overflow:hidden; margin:3px 0 8px; }
+.bar > span { display:block; height:100%; background:#2a78d6; }
+#stage { position:relative; background:#111; border-radius:6px; overflow:hidden; align-self:start; }
+#stage svg { width:100%; display:block; }
+#stale { position:absolute; inset:0; display:none; align-items:center; justify-content:center;
+         background:rgba(0,0,0,.55); color:#fff; font-size:18px; font-weight:600; text-align:center; padding:20px; }
+</style>
+<h1>Vista en vivo del stream</h1>
+<p class="muted" style="margin-top:-6px">Lee el estado que publica <span class="mono">python -m monitor.pipeline --scenario … --live</span> cada 0.5 s.
+Las cajas son las detecciones del último frame (verde aceptada, ámbar duda, rojo baja). Los eventos se guardan en la base al cerrar su ventana.</p>
+<p><span id="health" class="health h-{{ st.health }}">{{ st.health }}</span> <span id="detail">{{ st.detail }}</span></p>
+<div class="live">
+<div id="stage">
+  <svg id="frame" viewBox="0 0 768 576"><image id="img" x="0" y="0" width="768" height="576" href=""/><g id="boxes"></g></svg>
+  <div id="stale"></div>
+</div>
+<div>
+<div class="card"><dl class="kv">
+  <dt>Ejecución</dt><dd id="run">—</dd><dt>Modelo</dt><dd id="model" class="mono">—</dd>
+  <dt>Configuración</dt><dd id="cfg" class="mono">—</dd><dt>Actualizado</dt><dd id="upd" class="mono">—</dd>
+</dl></div>
+<div class="card" style="margin-top:10px"><b>Último evento</b><dl class="kv" style="margin-top:4px">
+  <dt>Evento</dt><dd id="ev" class="mono">—</dd><dt>Estado</dt><dd id="evst">—</dd>
+  <dt>Frame</dt><dd id="evfr" class="mono">—</dd><dt>Detecciones</dt><dd id="evdet">—</dd>
+  <dt>Tiempos</dt><dd id="evt">—</dd>
+</dl></div>
+<div class="card" style="margin-top:10px"><b>Ventana en curso</b> <span id="win" class="mono"></span>
+  <div style="font-size:12px" id="winev"></div><div class="bar"><span id="barev" style="width:0"></span></div>
+  <div style="font-size:12px" id="winval"></div><div class="bar"><span id="barval" style="width:0"></span></div>
+  <div style="font-size:12px" id="windet"></div><div class="bar"><span id="bardet" style="width:0"></span></div>
+  <div style="font-size:12px">Última ventana cerrada: <span id="lastwin">—</span></div>
+</div>
+<div class="card" style="margin-top:10px"><b>Alertas abiertas</b> <span id="nalerts"></span><div id="alerts" style="margin-top:4px">—</div></div>
+<div class="card" style="margin-top:10px"><b>Fuente</b><div id="src" style="font-size:12px;margin-top:4px">—</div></div>
+</div></div>
+<script>
+const ZC = {low:'#c0392b', doubt:'#d68910', accepted:'#1e8449'};
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '—').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pct = (a, b) => Math.min(100, b ? 100 * a / b : 0) + '%';
+let lastFrame = null;
+function render(st) {
+  $('health').className = 'health h-' + st.health; $('health').textContent = st.health; $('detail').textContent = st.detail;
+  if (!st.run_id) return;
+  $('run').innerHTML = `<a href="/ejecuciones/${esc(st.run_id)}">${esc(st.run_id)}</a> · ${esc(st.scenario)}`;
+  $('model').textContent = st.model_ref; $('cfg').textContent = st.config_ref;
+  $('upd').textContent = `${st.updated_at} (hace ${st.age_s} s)`;
+  if (st.frame_seq !== null && st.frame_seq !== lastFrame) {
+    lastFrame = st.frame_seq; $('img').setAttribute('href', '/en-vivo/frame.jpg?seq=' + st.frame_seq);
+  }
+  const e = st.last_event || {};
+  const shown = e.status === 'source_gap' ? [] : (e.detections || []);
+  $('boxes').innerHTML = shown.map(d => { const [x1,y1,x2,y2] = d.bbox_xyxy, c = ZC[d.zone];
+    return `<rect x="${x1}" y="${y1}" width="${x2-x1}" height="${y2-y1}" fill="none" stroke="${c}" stroke-width="2"/>` +
+           `<text x="${x1+2}" y="${y1+13}" fill="${c}" font-size="13" font-weight="700" stroke="#fff" stroke-width="0.4">${d.score.toFixed(2)}</text>`; }).join('');
+  const veil = {hueco_fuente: 'La fuente no entrega frames<br><small>' + esc(st.detail) + '</small>',
+                detenido: 'Monitor detenido<br><small>' + esc(st.detail) + '</small>', terminada: 'Ejecución terminada'}[st.health];
+  $('stale').style.display = veil ? 'flex' : 'none'; $('stale').innerHTML = veil ? `<div>${veil}</div>` : '';
+  $('ev').textContent = e.event_id || '—';
+  $('evst').innerHTML = `<span class="badge st-${esc(e.status)}">${esc(e.status)}</span>` +
+    (e.frame_zone ? ` <span class="badge z-${esc(e.frame_zone)}">${esc(e.frame_zone)}</span>` : '');
+  $('evfr').textContent = e.frame_index ?? 'sin frame';
+  $('evdet').textContent = e.status === 'source_gap' ? '—' :
+    `${e.n_detections} (baja ${e.n_low}, duda ${e.n_doubt}, acept. ${e.n_accepted}) · máx ${e.max_score === null ? '—' : e.max_score.toFixed(3)}`;
+  $('evt').textContent = e.inference_ms == null ? '—' : `inferencia ${e.inference_ms.toFixed(1)} ms · extremo a extremo ${e.e2e_ms.toFixed(1)} ms`;
+  const w = st.window;
+  $('win').textContent = w.window_id.split('-').pop();
+  $('winev').textContent = `eventos ${w.n_events} / ${w.size}`; $('barev').style.width = pct(w.n_events, w.size);
+  $('winval').textContent = `frames válidos ${w.n_valid} (mínimo ${w.min_frames})`; $('barval').style.width = pct(w.n_valid, w.min_frames);
+  $('windet').textContent = `detecciones ${w.n_dets} (mínimo ${w.min_detections}) · baja ${w.n_low}` +
+    (w.n_dets ? ` (${(w.n_low / w.n_dets).toFixed(3)})` : '');
+  $('bardet').style.width = pct(w.n_dets, w.min_detections);
+  const lw = st.last_window;
+  $('lastwin').innerHTML = lw ? `<a href="/ventanas/${esc(lw.window_id)}">${esc(lw.window_id.split('-').pop())}</a> ${esc(lw.state)}` +
+    (lw.low_prop === null ? '' : ` · low_prop ${lw.low_prop.toFixed(3)}`) : '—';
+  $('nalerts').textContent = `(${st.alerts_open.length}; ${st.alerts_total} en la ejecución)`;
+  $('alerts').innerHTML = st.alerts_open.length ? st.alerts_open.map(a =>
+    `<div><span class="badge s-${esc(a.severity)}">${esc(a.severity)}</span> <a href="/alertas/${esc(a.alert_id)}">${esc(a.alert_id.split('-').pop())}</a> ${esc(a.rule_id)}</div>`).join('') : 'ninguna';
+  const se = st.source.last_event;
+  $('src').innerHTML = `eventos ${st.counts.events} · ok ${st.counts.ok} · sin detecciones ${st.counts.no_detections} · huecos ${st.counts.source_gap}<br>` +
+    `descartes ${esc(JSON.stringify(st.source.dropped))}` + (se ? `<br>último evento de la fuente: <b>${esc(se.kind)}</b> ${esc(se.ts)}` : '');
+}
+render({{ st|tojson }});
+async function poll() {
+  try { render(await (await fetch('/api/en-vivo', {cache: 'no-store'})).json()); }
+  catch (err) { $('health').className = 'health h-error'; $('health').textContent = 'error'; $('detail').textContent = 'El portal no responde: ' + err; }
+  setTimeout(poll, 500);
+}
+setTimeout(poll, 500);
+</script>
+{% endblock %}

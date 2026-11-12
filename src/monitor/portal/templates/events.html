@@ -12,7 +12,9 @@
   <label>Solo con captura<input type="checkbox" name="captured" value="true" {% if f.captured %}checked{% endif %}></label>
   <button>Consultar</button>
 </form>
-<p class="muted">{{ total }} eventos · página {{ page }} de {{ pages }}</p>
+<p class="muted">{{ total }} eventos · página {{ page }} de {{ pages }} ·
+  exportar los {{ total }} con estos filtros: <a href="/exportar/eventos.csv?{{ f|qs }}">CSV</a> ·
+  <a href="/exportar/eventos.jsonl?{{ f|qs }}">JSONL</a></p>
 {% if not items %}<div class="empty">Ningún evento coincide con la consulta.</div>{% else %}
 <div class="wrap"><table>
 <tr><th>Evento</th><th>Frame</th><th>Fecha (UTC)</th><th>Fuente</th><th>Estado</th><th>Det.</th>
@@ -26,7 +28,7 @@
 <td>{{ e.inference_ms|fmt(1) }}</td><td>{{ e.capture_reason or '—' }}</td>
 <td><a class="mono" href="/ventanas/{{ e.window_id }}">{{ e.window_id.split('-')[-1] }}</a></td></tr>
 {% endfor %}</table></div>
-<p>{% if page > 1 %}<a href="?run_id={{ f.run_id }}&status={{ f.status }}&zone={{ f.zone }}&captured={{ 'true' if f.captured else '' }}&page={{ page-1 }}">← anterior</a>{% endif %}
-{% if page < pages %} <a href="?run_id={{ f.run_id }}&status={{ f.status }}&zone={{ f.zone }}&captured={{ 'true' if f.captured else '' }}&page={{ page+1 }}">siguiente →</a>{% endif %}</p>
+<p>{% if page > 1 %}<a href="?{{ f|qs(page=page-1) }}">← anterior</a>{% endif %}
+{% if page < pages %} <a href="?{{ f|qs(page=page+1) }}">siguiente →</a>{% endif %}</p>
 {% endif %}
 {% endblock %}

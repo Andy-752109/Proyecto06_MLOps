@@ -43,7 +43,8 @@ la evidencia.
                                                           │
                      Portal FastAPI: /eventos  /alertas  /eventos/{id}  /alertas/{id}
                                      /ventanas/{id}  /ejecuciones/{id}  /config/{ref}
-                                     /tablero (adicional F1)
+                                     /tablero (F1)  /exportar/eventos.{csv,jsonl} (F2)
+                                     /capturas (F3)  /en-vivo (F4, con --live)
 ```
 
 | Módulo | Responsabilidad |
@@ -122,7 +123,14 @@ python scripts/verify_s2.py --run-id <id-s2> --c1 <id-c1> --c2 <id-c2>
 python scripts/extra_metrics.py --run-id <id-referencia> --run-id <id-c1> --run-id <id-c2> --run-id <id-s1> --run-id <id-s2>
 python scripts/recalc_extra.py  --run-id <id-referencia> --run-id <id-c1> --run-id <id-c2> --run-id <id-s1> --run-id <id-s2>
 
-# 10) Adicional F1: verificación del tablero contra los JSONL + recorrido en el navegador
+# 10) Adicionales F2–F4: exportación, revisión de capturas y vista en vivo
+python scripts/verify_export.py --run-id <id-c2> --run-id <id-s1>
+python scripts/demo_reviews.py --c2 <id-c2>          # base de demostración aparte
+python scripts/demo_live.py --scenario s1-interrupcion  # crea una ejecución nueva con --live
+#    Uso manual de la vista en vivo: en una terminal el portal y en otra
+#    python -m monitor.pipeline --scenario c1-normal --live   → http://127.0.0.1:8000/en-vivo
+
+# 11) Adicional F1: verificación del tablero contra los JSONL + recorrido en el navegador
 python scripts/verify_dashboard.py --run-id <id-c2> --run-id <id-c1> --run-id <id-referencia>
 ```
 
@@ -140,6 +148,8 @@ siempre escribe en la base configurada en `config/monitor.yaml → storage`.
 
 ## Configuración
 
+- Revisiones manuales de capturas: `evidencias/revisiones.db` (otra ruta con `REVIEW_DB`).
+  El portal sigue abriendo la base de monitoreo en solo lectura.
 - `config/monitor.yaml`: modelo, umbrales (0.40 / 0.70), ventanas (20 frames, mínimos 15 frames
   y 30 detecciones), reglas de alerta, política de captura y almacenamiento. Su hash es el `config_ref`.
 - `config/scenarios.yaml`: fuente de cada escenario (ruta, SHA-256, tramo de frames,

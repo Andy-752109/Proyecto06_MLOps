@@ -1,0 +1,10 @@
+{# Imagen capturada con las cajas registradas (verde aceptada, ámbar duda, rojo baja). #}
+{% macro frame(ev) %}
+  <svg viewBox="0 0 768 576" style="width:100%;display:block">
+    <image href="/evidencia/{{ ev.image_ref }}" x="0" y="0" width="768" height="576"/>
+    {% for d in ev.detections %}{% set c = {'low':'#c0392b','doubt':'#d68910','accepted':'#1e8449'}[d.zone] %}
+    <rect x="{{ d.bbox_xyxy[0] }}" y="{{ d.bbox_xyxy[1] }}" width="{{ d.bbox_xyxy[2]-d.bbox_xyxy[0] }}" height="{{ d.bbox_xyxy[3]-d.bbox_xyxy[1] }}" fill="none" stroke="{{ c }}" stroke-width="2"/>
+    <text x="{{ d.bbox_xyxy[0]+2 }}" y="{{ d.bbox_xyxy[1]+12 }}" fill="{{ c }}" font-size="12" font-weight="700" stroke="#fff" stroke-width="0.4">{{ '%.2f'|format(d.score) }}</text>
+    {% endfor %}
+  </svg>
+{% endmacro %}

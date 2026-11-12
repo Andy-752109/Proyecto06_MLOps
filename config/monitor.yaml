@@ -71,3 +71,4 @@ capture:
 storage:
   db: evidencias/monitor.db
   runs_dir: evidencias/runs
+  live_dir: evidencias/live    # solo con --live; se sobrescribe en cada evento y no se versiona

@@ -5,3 +5,6 @@ __pycache__/
 .DS_Store
 # salidas propias de Ultralytics en la raíz (no se usan); evidencias/runs SÍ se versiona
 /runs/
+
+# vista en vivo: estado efímero que se reescribe en cada evento
+evidencias/live/

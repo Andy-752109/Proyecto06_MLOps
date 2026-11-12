@@ -27,8 +27,12 @@
 </table></div>
 <h2>Capturas vinculadas ({{ captured|length }})</h2>
 {% if not captured %}<div class="empty">Sin capturas vinculadas.</div>{% else %}
-<div class="grid">{% for e in captured %}<div class="card"><a href="/eventos/{{ e.event_id }}"><img class="thumb" loading="lazy" src="/evidencia/{{ e.image_ref }}" alt="{{ e.event_id }}"></a>
-<div class="mono">{{ e.event_id.split('-')[-1] }} · {{ e.capture_reason }}</div><div>máx {{ e.max_score|fmt }} · baja {{ e.n_low }}/{{ e.n_detections }}</div></div>{% endfor %}</div>{% endif %}
+<p>Revisión manual: <b>{{ review_summary.reviewed }} de {{ captured|length }}</b> revisadas
+{%- for k, n in review_summary.by_label.items() if n %}{{ ' · ' if loop.first else ', ' }}{{ k }} {{ n }}{% endfor %}.
+<a href="/capturas?run_id={{ a.run_id }}&review=sin_revisar">Revisar pendientes</a></p>
+<div class="grid">{% for e in captured %}{% set rv = reviews.get(e.event_id) %}<div class="card"><a href="/capturas/{{ e.event_id }}"><img class="thumb" loading="lazy" src="/evidencia/{{ e.image_ref }}" alt="{{ e.event_id }}"></a>
+<div class="mono">{{ e.event_id.split('-')[-1] }} · {{ e.capture_reason }}</div><div>máx {{ e.max_score|fmt }} · baja {{ e.n_low }}/{{ e.n_detections }}</div>
+<div>{% if rv %}<span class="badge rv">{{ rv.label }}</span> <span class="muted">{{ rv.reviewer }}</span>{% else %}<span class="muted">sin revisar</span>{% endif %}</div></div>{% endfor %}</div>{% endif %}
 <h2>Eventos de origen ({{ events|length }})</h2>
 <div class="wrap"><table><tr><th>Evento</th><th>Estado</th><th>Det.</th><th>Baja / duda / acept.</th><th>Máx. s</th><th>Captura</th></tr>
 {% for e in events %}<tr><td><a class="mono" href="/eventos/{{ e.event_id }}">{{ e.event_id }}</a></td><td>{{ e.status }}</td><td>{{ e.n_detections }}</td>

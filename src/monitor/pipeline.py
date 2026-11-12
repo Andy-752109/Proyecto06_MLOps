@@ -37,7 +37,8 @@ def git_info() -> tuple[str | None, bool | None]:
 
 
 class Monitor:
-    def __init__(self, scenario: str, run_id: str | None = None, max_frames: int | None = None):
+    def __init__(self, scenario: str, run_id: str | None = None, max_frames: int | None = None,
+                 live: bool = False):
         self.cfg = load_config()
         self.sc = load_scenario(scenario)
         self.max_frames = max_frames
@@ -69,6 +70,10 @@ class Monitor:
         self.alerts: dict[str, dict] = {}
         self.windows: list[dict] = []
         self.all_events: list[dict] = []  # eventos de ventanas cerradas
+        # vista en vivo (opcional): último frame + estado, reescritos por cada evento
+        self.live_dir = ROOT / self.cfg["storage"].get("live_dir", "evidencias/live") if live else None
+        self.live_counts = {"events": 0, "ok": 0, "no_detections": 0, "error": 0, "source_gap": 0}
+        self.last_frame_seq = None
 
     # ---------------------------------------------------------------- run
     def run(self) -> dict:
@@ -112,9 +117,12 @@ class Monitor:
         print(f"run {self.run_id} · {cfg['config_ref']} · {self.detector.model_ref} · fuente {src_path.name}")
 
         source = VideoStreamSource(sc["source"], ROOT).start()
+        self.source = source
         t0 = time.perf_counter()
         for frame in source.frames():
             self._process(frame)
+            if self.live_dir:
+                self._publish_live(frame)
             if len(self.win_events) >= cfg["windows"]["size_frames"]:
                 self._close_window()
             if self.max_frames and self.seq >= self.max_frames:
@@ -206,6 +214,54 @@ class Monitor:
         self.win_res.append({"run_id": self.run_id, "seq": seq, "event_id": event_id,
                              "ts": utc_now(), "rss_mb": round(mem, 3),
                              "cpu_percent": self.proc.cpu_percent(None)})
+
+    def _publish_live(self, item, state: str = "running") -> None:
+        """Escribe evidencias/live/{frame.jpg,status.json} de forma atómica (tmp + replace)."""
+        self.live_dir.mkdir(parents=True, exist_ok=True)
+        ev = self.win_events[-1] if self.win_events else (self.all_events[-1] if self.all_events else None)
+        if ev is not None and item is not None and not isinstance(item, SourceGap):
+            ok, buf = cv2.imencode(".jpg", item.image, [cv2.IMWRITE_JPEG_QUALITY, 70])
+            if ok:
+                tmp = self.live_dir / "frame.jpg.tmp"
+                tmp.write_bytes(buf.tobytes())
+                os.replace(tmp, self.live_dir / "frame.jpg")
+                self.last_frame_seq = ev["seq"]
+        if ev is not None and item is not None:
+            self.live_counts["events"] += 1
+            self.live_counts[ev["status"]] += 1
+        evs = self.win_events
+        valid = [e for e in evs if e["status"] in VALID]
+        st = self.source.stats
+        status = {
+            "run_id": self.run_id, "scenario": self.sc["name"], "source_id": self.sc["source"]["source_id"],
+            "model_ref": self.detector.model_ref, "config_ref": self.cfg["config_ref"],
+            "started_at": self.manifest["started_at"], "updated_at": utc_now(), "state": state,
+            "policy": {"lower": self.cfg["policy"]["lower"], "upper": self.cfg["policy"]["upper"]},
+            "frame_seq": self.last_frame_seq,
+            "last_event": None if ev is None else {
+                k: ev.get(k) for k in ("event_id", "seq", "status", "error", "frame_index", "captured_at",
+                                       "n_detections", "n_low", "n_doubt", "n_accepted", "max_score",
+                                       "frame_zone", "inference_ms", "e2e_ms", "window_id", "capture_reason")}
+                | {"detections": [{"score": d["score"], "zone": d["zone"], "bbox_xyxy": d["bbox_xyxy"]}
+                                  for d in ev.get("detections") or []]},
+            "window": {"window_id": f"{self.run_id}-w{self.win_idx:03d}", "idx": self.win_idx,
+                       "n_events": len(evs), "size": self.cfg["windows"]["size_frames"],
+                       "n_valid": len(valid), "n_dets": sum(e["n_detections"] for e in valid),
+                       "n_low": sum(e["n_low"] for e in valid),
+                       "min_frames": self.cfg["windows"]["min_frames"],
+                       "min_detections": self.cfg["windows"]["min_detections"]},
+            "last_window": None if not self.windows else {
+                k: self.windows[-1][k] for k in ("window_id", "idx", "state", "low_prop", "n_valid", "n_dets")},
+            "alerts_open": [{k: a[k] for k in ("alert_id", "rule_id", "severity", "opened_at")}
+                            for a in (self.engine.open.values() if self.engine else [])],
+            "alerts_total": len(self.alerts),
+            "counts": self.live_counts,
+            "source": {"gaps": st.gaps, "dropped": st.dropped,
+                       "last_event": st.events[-1] if st.events else None},
+        }
+        tmp = self.live_dir / "status.json.tmp"
+        tmp.write_text(json.dumps(status, ensure_ascii=False))
+        os.replace(tmp, self.live_dir / "status.json")
 
     def _capture_reason(self, seq: int, status: str, frame_zone: str | None) -> str | None:
         cap = self.cfg["capture"]
@@ -331,6 +387,8 @@ class Monitor:
                          (self.manifest["ended_at"], "completed", json.dumps(summary), self.run_id))
         self.store.dump_alerts(self.run_id)
         self.store.close()
+        if self.live_dir:
+            self._publish_live(None, state="finished")
         (self.run_dir / "manifest.json").write_text(json.dumps(self.manifest, indent=2, ensure_ascii=False))
         print(json.dumps(summary, indent=2, ensure_ascii=False))
         print(f"evidencias en {self.run_dir.relative_to(ROOT)}")
@@ -342,8 +400,10 @@ def main() -> None:
     ap.add_argument("--scenario", required=True)
     ap.add_argument("--run-id")
     ap.add_argument("--max-frames", type=int, help="limita frames procesados (pruebas rápidas)")
+    ap.add_argument("--live", action="store_true",
+                    help="publica el último frame y el estado en storage.live_dir para /en-vivo")
     args = ap.parse_args()
-    Monitor(args.scenario, args.run_id, args.max_frames).run()
+    Monitor(args.scenario, args.run_id, args.max_frames, args.live).run()
 
 
 if __name__ == "__main__":

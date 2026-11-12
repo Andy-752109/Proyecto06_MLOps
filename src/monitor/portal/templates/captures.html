@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Capturas{% endblock %}
+{% block content %}
+<h1>Revisión de capturas</h1>
+<p class="muted" style="margin-top:-6px">Solo frames capturados según la política. La etiqueta vigente es la revisión más reciente; el historial se conserva.</p>
+<form class="filters" method="get">
+  <label>Ejecución<select name="run_id"><option value="">(todas)</option>
+    {% for r in run_ids %}<option {% if r == f.run_id %}selected{% endif %}>{{ r }}</option>{% endfor %}</select></label>
+  <label>Motivo de captura<select name="reason"><option value="">(todos)</option>
+    {% for r in reasons %}<option {% if r == f.reason %}selected{% endif %}>{{ r }}</option>{% endfor %}</select></label>
+  <label>Revisión<select name="review"><option value="">(todas)</option>
+    <option value="sin_revisar" {% if f.review == 'sin_revisar' %}selected{% endif %}>sin revisar</option>
+    {% for k in labels %}<option {% if k == f.review %}selected{% endif %}>{{ k }}</option>{% endfor %}</select></label>
+  <button>Consultar</button>
+</form>
+<p class="muted">{{ total }} capturas · página {{ page }} de {{ pages }}</p>
+{% if not items %}<div class="empty">Ninguna captura coincide con la consulta.</div>{% else %}
+<div class="grid">{% for e in items %}<div class="card">
+<a href="/capturas/{{ e.event_id }}"><img class="thumb" loading="lazy" src="/evidencia/{{ e.image_ref }}" alt="{{ e.event_id }}"></a>
+<div class="mono" style="font-size:11px">{{ e.run_id }}</div>
+<div><span class="mono">{{ e.event_id.split('-')[-1] }}</span> · {{ e.capture_reason }}
+{% if e.frame_zone %}<span class="badge z-{{ e.frame_zone }}">{{ e.frame_zone }}</span>{% endif %}</div>
+<div>{% if e.review %}<span class="badge rv">{{ e.review.label }}</span> <span class="muted">{{ e.review.reviewer }}</span>{% else %}<span class="muted">sin revisar</span>{% endif %}</div>
+</div>{% endfor %}</div>
+<p>{% if page > 1 %}<a href="?{{ f|qs(page=page-1) }}">← anterior</a>{% endif %}
+{% if page < pages %} <a href="?{{ f|qs(page=page+1) }}">siguiente →</a>{% endif %}</p>{% endif %}
+{% endblock %}

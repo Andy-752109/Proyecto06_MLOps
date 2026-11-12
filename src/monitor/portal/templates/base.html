@@ -35,12 +35,15 @@ select, input, button { font:inherit; padding:4px 6px; }
 .thumb { width:100%; border-radius:4px; display:block; }
 pre { background:#fff; border:1px solid var(--line); padding:10px; overflow:auto; font-size:12px; }
 td a.mono, td.mono { white-space:nowrap; }
+.badge.rv { background:#34495e; }
+.flash { padding:8px 12px; border-radius:6px; margin:8px 0; background:#fff; border:1px solid var(--line); }
+.flash.ok { border-color:var(--accepted); } .flash.err { border-color:var(--low); }
 .empty { padding:16px; background:#fff; border:1px dashed var(--line); color:var(--muted); }
 </style>
 </head>
 <body>
 <header><strong>Centro de monitoreo CV</strong>
-  <a href="/">Inicio</a><a href="/eventos">Eventos</a><a href="/alertas">Alertas</a><a href="/tablero">Tablero</a></header>
+  <a href="/">Inicio</a><a href="/eventos">Eventos</a><a href="/alertas">Alertas</a><a href="/en-vivo">En vivo</a><a href="/capturas">Capturas</a><a href="/tablero">Tablero</a></header>
 <main>{% block content %}{% endblock %}</main>
 </body>
 </html>
