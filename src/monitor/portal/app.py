@@ -397,13 +397,15 @@ def captures_page(request: Request, run_id: str = "", reason: str = "", review: 
 
 
 @app.get("/capturas/{event_id}", response_class=HTMLResponse)
-def capture_page(request: Request, event_id: str, guardado: int = 0, error: str = "",
-                 status_code: int = 200):
+def capture_page(request: Request, event_id: str, guardado: str = "", etiqueta: str = "",
+                 error: str = "", status_code: int = 200):
+    """`guardado` es el evento cuya revisión se acaba de guardar: puede ser este mismo o el
+    anterior, si se usó "Guardar y siguiente"."""
     ev = one("SELECT * FROM events WHERE event_id=?", (event_id,))
     return templates.TemplateResponse(request, "capture.html", {
         "ev": ev, "alerts": alerts_for_event(event_id), "history": REVIEWS.history(event_id),
-        "labels": LABELS, "next": next_unreviewed(ev), "saved": guardado, "error": error},
-        status_code=status_code)
+        "labels": LABELS, "next": next_unreviewed(ev), "saved": guardado, "saved_label": etiqueta,
+        "error": error}, status_code=status_code)
 
 
 @app.post("/capturas/{event_id}/revision")
@@ -416,8 +418,8 @@ async def capture_review(request: Request, event_id: str):
     except ReviewError as exc:
         return capture_page(request, event_id, error=str(exc), status_code=exc.status)
     nxt = next_unreviewed(ev) if form.get("siguiente") else None
-    return RedirectResponse(f"/capturas/{nxt}?guardado=1" if nxt else f"/capturas/{event_id}?guardado=1",
-                            status_code=303)
+    done = urlencode({"guardado": event_id, "etiqueta": form.get("label", "")})
+    return RedirectResponse(f"/capturas/{nxt or event_id}?{done}", status_code=303)
 
 
 @app.get("/api/revisiones")

@@ -5,7 +5,8 @@
 <div class="crumbs"><a href="/capturas?run_id={{ ev.run_id }}">Capturas</a><span>/</span>{{ ev.run_id|run_label }}<span>/</span>{{ ev.event_id|short }}</div>
 <h1>Revisión de captura {{ ev.event_id|short }}{% if ev.frame_zone %} <span class="badge z-{{ ev.frame_zone }}">{{ ev.frame_zone|es }}</span>{% elif ev.status != 'ok' %} <span class="badge st-{{ ev.status }}">{{ ev.status|es }}</span>{% endif %}</h1>
 <p class="lead mono">{{ ev.event_id }}</p>
-{% if saved %}<div class="flash ok">Revisión guardada.</div>{% endif %}
+{% if saved == ev.event_id %}<div class="flash ok">Revisión guardada{% if saved_label %} como <b>{{ saved_label }}</b>{% endif %}. Aparece abajo en el historial.</div>
+{% elif saved %}<div class="flash ok">Revisión de <a href="/capturas/{{ saved }}"><b>{{ saved|short }}</b></a> guardada{% if saved_label %} como <b>{{ saved_label }}</b>{% endif %} (ver su historial en el enlace). Ahora estás en la <b>siguiente captura sin revisar</b>, {{ ev.event_id|short }}, que todavía no tiene revisiones.</div>{% endif %}
 {% if error %}<div class="flash err">No se guardó: {{ error }}</div>{% endif %}
 <div class="split">
 <div class="card">
