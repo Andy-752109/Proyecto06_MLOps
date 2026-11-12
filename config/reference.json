@@ -1,0 +1,69 @@
+{
+  "reference_id": "ref-reference-20261112T162358Z",
+  "run_id": "reference-20261112T162358Z",
+  "source": {
+    "source_id": "video-vtest-01",
+    "type": "video_file",
+    "path": "data/videos/vtest.avi",
+    "sha256": "45cddc9490be69345cbdab64ca583be65987e864ca408038e648db99e10516cf",
+    "playback": "realtime",
+    "sample_every": 2,
+    "queue_maxsize": 4,
+    "start_frame": 0,
+    "end_frame": 400
+  },
+  "source_sha256": "45cddc9490be69345cbdab64ca583be65987e864ca408038e648db99e10516cf",
+  "model_ref": "yolov8n@sha256:f59b3d833e2f",
+  "model_sha256": "f59b3d833e2ff32e194b5bb8e08d211dc7c5bdf144b90d2c8412c47ccfc83b36",
+  "config_ref": "cfg-517d02606b3e",
+  "git_commit": "6b84820b06b922a495a422ea42b01d811b93811b",
+  "unit": "detection",
+  "population": "detecciones candidatas (s >= conf_floor tras NMS) en frames con inferencia válida",
+  "thresholds": {
+    "lower": 0.4,
+    "upper": 0.7
+  },
+  "n_frames_valid": 200,
+  "n_detections": 1446,
+  "n_low": 264,
+  "low_prop": 0.182573,
+  "score_percentiles": {
+    "p5": 0.119835,
+    "p10": 0.150926,
+    "p25": 0.650809,
+    "p50": 0.763844,
+    "p75": 0.810117,
+    "p90": 0.841761,
+    "p95": 0.858159
+  },
+  "score_histogram": {
+    "[0.1,0.2)": 204,
+    "[0.2,0.3)": 41,
+    "[0.3,0.4)": 19,
+    "[0.4,0.5)": 25,
+    "[0.5,0.6)": 28,
+    "[0.6,0.7)": 130,
+    "[0.7,0.8)": 567,
+    "[0.8,0.9)": 429,
+    "[0.9,1.0)": 3
+  },
+  "prop_below": {
+    "0.20": 0.1411,
+    "0.30": 0.1694,
+    "0.35": 0.1798,
+    "0.40": 0.1826,
+    "0.45": 0.1916,
+    "0.50": 0.1999,
+    "0.60": 0.2192,
+    "0.70": 0.3091,
+    "0.80": 0.7012
+  },
+  "windows": {
+    "n": 10,
+    "n_eligible": 10,
+    "low_prop_mean": 0.184624,
+    "low_prop_sd": 0.054139,
+    "low_prop_min": 0.096154,
+    "low_prop_max": 0.257732
+  }
+}
