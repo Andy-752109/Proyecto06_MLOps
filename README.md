@@ -1,6 +1,6 @@
 # Proyecto 6 · Centro de monitoreo de computer vision
 
-**Autora:** Andrea Lizeth Arévalo Solís · Expediente 752109 · ITESO
+**Autora:** Andrea Lizeth Arevalo Solis · Expediente 752109 · ITESO
 **Materia:** Integración de Servicios de Aprendizaje Automático (MLOps) · entrega **individual**
 
 El sistema monitorea un detector de personas que recibe un stream de video. Cada frame
@@ -159,7 +159,7 @@ siempre escribe en la base configurada en `config/monitor.yaml → storage`.
 
 ## Autoría, aportación propia y componentes reutilizados
 
-**Aportación propia** (Andrea Lizeth Arévalo Solís): diseño e implementación de todo el código
+**Aportación propia** (Andrea Lizeth Arevalo Solis): diseño e implementación de todo el código
 de `src/monitor/` (stream, integración del modelo, política de zonas, reglas y ciclo de vida
 de alertas, métricas, persistencia y portal), de los scripts de `scripts/`, de las pruebas,
 de la configuración, de la documentación y de la generación de evidencias.
