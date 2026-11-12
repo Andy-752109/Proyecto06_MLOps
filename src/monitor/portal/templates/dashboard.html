@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Tablero histórico{% endblock %}
+{% block content %}
+<style>
+.viz { --surface:#fcfcfb; --grid:#e6e6e1; --axis:#6b6b66; --ink:#1d1d1b; --ink2:#52514e; }
+.charts { display:grid; grid-template-columns:repeat(auto-fill,minmax(440px,1fr)); gap:12px; }
+.chart { background:var(--surface); border:1px solid var(--line); border-radius:6px; padding:10px 12px; }
+.chart h3 { font-size:14px; margin:0 0 2px; } .chart .sub { font-size:12px; color:var(--muted); margin-bottom:4px; }
+.chart svg { width:100%; height:auto; display:block; }
+svg text { font:11px system-ui,-apple-system,sans-serif; fill:var(--ink2); }
+svg .grid { stroke:var(--grid); stroke-width:1; }
+svg .series { fill:none; stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+svg .pt circle.mark { stroke:var(--surface); stroke-width:2; }
+svg .pt circle.hit { fill:transparent; }
+svg .pt:hover circle.mark, svg .pt:focus circle.mark { r:6; }
+svg .guide-ref { stroke:var(--ink2); stroke-width:1.5; stroke-dasharray:6 4; }
+svg .guide-rule { stroke:var(--low); stroke-width:1.5; stroke-dasharray:2 3; }
+svg .nodata { stroke:var(--axis); stroke-width:1.5; }
+.legend { display:flex; flex-wrap:wrap; gap:6px 16px; font-size:12px; color:var(--ink2); margin:6px 0 10px; }
+.key { display:inline-flex; align-items:center; gap:6px; }
+.sw { width:16px; height:3px; border-radius:2px; display:inline-block; }
+.dot { width:9px; height:9px; border-radius:50%; display:inline-block; }
+.alert-strip .lane-label { font-size:11px; fill:var(--ink2); }
+.notice { padding:8px 12px; border-radius:6px; margin:8px 0; background:#fff; border:1px solid var(--line); }
+.notice.err { border-color:var(--low); }
+.notice.err::before { content:"✖ "; color:var(--low); font-weight:600; }
+.notice.note::before { content:"ⓘ "; color:var(--info); font-weight:600; }
+details summary { cursor:pointer; font-size:12px; color:var(--muted); margin-top:4px; }
+details table { font-size:12px; margin-top:4px; }
+fieldset { border:1px solid var(--line); border-radius:6px; background:#fff; padding:8px 12px; }
+form.filters fieldset label { flex-direction:row; color:var(--fg); display:flex; gap:6px; align-items:center; font-size:13px; padding:2px 0; }
+</style>
+
+<h1>Tablero histórico por ventana</h1>
+<p class="muted" style="margin-top:-6px">Cada punto es una ventana de 20 frames procesados y enlaza a su detalle.
+Valores leídos de <span class="mono">metric_values</span>, <span class="mono">windows</span> y
+<span class="mono">alerts</span> (SQLite); no se recalculan en el portal.</p>
+
+<form class="filters" method="get" action="/tablero" id="sel">
+<fieldset><legend class="muted" style="font-size:12px">Ejecuciones a comparar (máximo {{ max_runs }})</legend>
+{% for r in d.available %}<label><input type="checkbox" name="run_id" value="{{ r.run_id }}" {% if r.run_id in selected %}checked{% endif %}>
+<span class="mono">{{ r.run_id }}</span> <span class="muted">· {{ r.config_ref }}</span></label>{% endfor %}
+{% if not d.available %}<span class="muted">Sin ejecuciones.</span>{% endif %}
+</fieldset>
+<input type="hidden" name="enviado" value="1">
+<button type="submit">Actualizar</button>
+</form>
+
+{% for e in d.errors %}<div class="notice err">{{ e }}</div>{% endfor %}
+{% for n in d.notes %}<div class="notice note">{{ n }}</div>{% endfor %}
+{% if d.empty %}<div class="empty">{{ d.empty }}</div>{% endif %}
+
+{% for g in groups %}
+<section class="viz">
+<h2>Grupo comparable · <a class="mono" href="/config/{{ g.config_ref }}">{{ g.config_ref }}</a> · <span class="mono">{{ g.model_ref }}</span></h2>
+
+<div class="wrap"><table>
+<tr><th></th><th>Ejecución</th><th>Escenario</th><th>Commit</th><th>Ventanas</th><th>Elegibles</th><th>Insuficientes</th>
+<th>Métricas sin datos</th><th>Alertas (abiertas)</th></tr>
+{% for r in g.runs %}{% set s = r.summary %}
+<tr><td><span class="sw" style="background:{{ r.color }}"></span></td>
+<td><a class="mono" href="/ejecuciones/{{ r.run_id }}">{{ r.run_id }}</a></td><td>{{ r.scenario }}</td>
+<td class="mono">{{ (r.git_commit or '')[:8] }}</td><td>{{ s.n_windows }}</td><td>{{ s.n_eligible }}</td>
+<td>{{ s.n_insufficient }}</td><td>{{ s.n_no_data }}</td>
+<td><a href="/alertas?run_id={{ r.run_id }}">{{ s.n_alerts }}</a> ({{ s.n_alerts_open }})</td></tr>
+{% endfor %}</table></div>
+
+<div class="legend">
+{% for r in g.runs %}<span class="key"><span class="sw" style="background:{{ r.color }}"></span>{{ r.scenario }}</span>{% endfor %}
+<span class="key"><svg width="12" height="12"><circle cx="6" cy="6" r="4" fill="#52514e"/></svg>ventana elegible</span>
+<span class="key"><svg width="12" height="12"><circle cx="6" cy="6" r="4" fill="#fff" stroke="#52514e" stroke-width="2"/></svg>ventana insuficiente</span>
+<span class="key"><svg width="12" height="12"><path d="M2 2L10 10M10 2L2 10" class="nodata" stroke="#6b6b66" stroke-width="1.5"/></svg>sin datos (hueco)</span>
+{% if not g.reference_comparable %}<span class="key">referencia no comparable con este grupo: no se dibuja</span>{% endif %}
+</div>
+
+<h3 style="font-size:14px;margin:10px 0 4px">Alertas por ejecución y regla</h3>
+{% set p0 = g.plots[0] %}
+<div class="chart alert-strip" style="max-width:{{ p0.W + 26 }}px">
+{% for row in g.alert_rows %}
+<div style="font-size:12px;margin-top:4px"><span class="sw" style="background:{{ row.run.color }}"></span> <span class="mono">{{ row.run.run_id }}</span></div>
+{% if not row.lanes %}<div class="muted" style="font-size:12px;padding:2px 0 4px {{ p0.ML }}px">Sin alertas</div>{% endif %}
+{% for rule_id, bars in row.lanes %}
+<div class="muted" style="font-size:11px;padding-left:{{ p0.ML }}px;margin-top:2px">{{ rule_id }}</div>
+<svg viewBox="0 0 {{ p0.W }} 22" role="img" aria-label="Alertas de {{ rule_id }}">
+<line x1="{{ p0.ML }}" x2="{{ p0.W - p0.MR }}" y1="11" y2="11" class="grid"/>
+{% for b in bars %}<a href="/alertas/{{ b.alert_id }}"><title>{{ b.alert_id }} · {{ b.rule_id }} · {{ b.severity }} · {{ b.status }}
+ventanas {{ b.first_idx }}–{{ b.last_idx }} · abierta {{ b.opened_at }}{% if b.resolved_at %} · resuelta {{ b.resolved_at }}{% endif %}</title>
+<rect x="{{ '%.1f'|format(b.x) }}" y="3" width="{{ '%.1f'|format(b.w) }}" height="16" rx="4" class="badge s-{{ b.severity }}" style="fill:{% if b.severity == 'high' %}#922b21{% elif b.severity == 'warning' %}#c0392b{% else %}#2471a3{% endif %}"/>
+<text x="{{ '%.1f'|format(b.x + 5) }}" y="15" style="fill:#fff;font-weight:600">{{ b.alert_id.split('-')[-1] }} {{ b.status }}</text></a>{% endfor %}
+</svg>{% endfor %}
+{% endfor %}
+<div class="muted" style="font-size:12px;margin-top:4px">Mismo eje horizontal (índice de ventana) que las gráficas. Cada franja enlaza a la alerta.</div>
+</div>
+
+<div class="charts" style="margin-top:12px">
+{% for c in g.plots %}
+<div class="chart">
+<h3>{{ c.label }}</h3>
+<div class="sub">{{ c.unit }} por ventana · eje x: índice de ventana{% if c.guide_lines %} · líneas: {% for gl in c.guide_lines %}{{ gl.label }}{% if not loop.last %}; {% endif %}{% endfor %}{% endif %}</div>
+<svg viewBox="0 0 {{ c.W }} {{ c.H }}" role="img" aria-label="{{ c.label }}">
+{% for t in c.ticks %}<line x1="{{ c.ML }}" x2="{{ c.W - c.MR }}" y1="{{ '%.1f'|format(t.y) }}" y2="{{ '%.1f'|format(t.y) }}" class="grid"/>
+<text x="{{ c.ML - 6 }}" y="{{ '%.1f'|format(t.y + 4) }}" text-anchor="end">{{ t.v }}</text>{% endfor %}
+{% for t in c.xticks %}<text x="{{ '%.1f'|format(t.x) }}" y="{{ c.H - c.MB + 16 }}" text-anchor="middle">{{ t.v }}</text>{% endfor %}
+{% for gl in c.guide_lines %}<line x1="{{ c.ML }}" x2="{{ c.W - c.MR }}" y1="{{ '%.1f'|format(gl.py) }}" y2="{{ '%.1f'|format(gl.py) }}" class="guide-{{ gl.kind }}"><title>{{ gl.label }}</title></line>{% endfor %}
+{% for s in c.series %}{% for pth in s.paths %}<path d="{{ pth }}" class="series" style="stroke:{{ s.run.color }}"/>{% endfor %}{% endfor %}
+{% for s in c.series %}{% for p in s.points %}
+<a class="pt" href="/ventanas/{{ p.window_id }}"><title>{{ s.run.scenario }} · ventana {{ p.x }} ({{ p.state }})
+{% if p.missing %}sin datos ({{ p.status }}){% else %}{{ c.metric_id }} = {{ p.y|fmt(4) }} {{ c.unit }} · n_obs {{ p.n_obs }}{% endif %}</title>
+{% if p.missing %}<path d="M{{ '%.1f'|format(p.px - 4) }} {{ '%.1f'|format(p.py - 4) }}l8 8m0 -8l-8 8" class="nodata"/>
+{% else %}<circle class="mark" cx="{{ '%.1f'|format(p.px) }}" cy="{{ '%.1f'|format(p.py) }}" r="4"
+ style="{% if p.state == 'eligible' %}fill:{{ s.run.color }}{% else %}fill:#fff;stroke:{{ s.run.color }}{% endif %}"/>{% endif %}
+<circle class="hit" cx="{{ '%.1f'|format(p.px) }}" cy="{{ '%.1f'|format(p.py) }}" r="9"/></a>{% endfor %}{% endfor %}
+</svg>
+<details><summary>Ver tabla</summary><div class="wrap"><table>
+<tr><th>Ventana</th>{% for s in c.series %}<th><span class="sw" style="background:{{ s.run.color }}"></span> {{ s.run.scenario }}</th>{% endfor %}</tr>
+{% for i in range(c.n_x) %}<tr><td>{{ i }}</td>{% for s in c.series %}{% set p = s.points[i] if i < s.points|length else none %}
+<td>{% if p %}<a href="/ventanas/{{ p.window_id }}">{{ p.y|fmt(4) }}</a>{% if p.state != 'eligible' %} <span class="muted">({{ p.state }})</span>{% endif %}{% if p.missing %} <span class="muted">({{ p.status }})</span>{% endif %}{% else %}—{% endif %}</td>{% endfor %}</tr>{% endfor %}
+</table></div></details>
+</div>
+{% endfor %}
+</div>
+</section>
+{% endfor %}
+
+<script>
+// Máximo de ejecuciones: deshabilita casillas extra (el servidor también lo valida).
+(() => { const f = document.getElementById('sel'); if (!f) return;
+  const boxes = [...f.querySelectorAll('input[name=run_id]')];
+  const sync = () => { const n = boxes.filter(b => b.checked).length;
+    boxes.forEach(b => { b.disabled = !b.checked && n >= {{ max_runs }}; }); };
+  boxes.forEach(b => b.addEventListener('change', sync)); sync(); })();
+</script>
+{% endblock %}

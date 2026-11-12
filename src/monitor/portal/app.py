@@ -11,8 +11,9 @@ from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 
-from ..config import ROOT, load_config
+from ..config import ROOT, load_config, load_reference
 from ..store import row_to_dict
+from . import dashboard
 
 CFG = load_config()
 DB_PATH = Path(os.environ.get("MONITOR_DB", ROOT / CFG["storage"]["db"]))
@@ -164,6 +165,26 @@ def config_page(request: Request, config_ref: str):
     return templates.TemplateResponse(request, "config.html", {"c": c})
 
 
+def dashboard_data(run_id: list[str]) -> tuple[int, dict]:
+    with db() as con:
+        data = dashboard.build(con, run_id, CFG, load_reference(CFG))
+    status = 404 if run_id and data["available"] and not data["groups"] else 200
+    return status, data
+
+
+@app.get("/tablero", response_class=HTMLResponse)
+def dashboard_page(request: Request, run_id: list[str] = Query(default=[])):
+    if not request.query_params:  # primera visita: las ejecuciones más recientes
+        run_id = [r["run_id"] for r in rows("SELECT run_id FROM runs ORDER BY started_at DESC")
+                  ][:dashboard.MAX_RUNS]
+    status, data = dashboard_data(run_id)
+    groups = [dict(g, plots=dashboard.layout(g), alert_rows=dashboard.alert_bars(g))
+              for g in data["groups"]]
+    return templates.TemplateResponse(request, "dashboard.html", {
+        "d": data, "groups": groups, "selected": set(run_id), "max_runs": dashboard.MAX_RUNS},
+        status_code=status)
+
+
 @app.get("/evidencia/{path:path}")
 def evidence_file(path: str):
     target = (ROOT / path).resolve()
@@ -190,6 +211,14 @@ def api_event(event_id: str):
 @app.get("/api/alertas")
 def api_alerts(run_id: str = "", status: str = "", rule_id: str = ""):
     return {"items": query_alerts(run_id, status, rule_id)}
+
+
+@app.get("/api/tablero")
+def api_dashboard(run_id: list[str] = Query(default=[])):
+    status, data = dashboard_data(run_id)
+    if status != 200:
+        raise HTTPException(status, "; ".join(data["errors"]) or data.get("empty"))
+    return data
 
 
 @app.get("/api/alertas/{alert_id}")

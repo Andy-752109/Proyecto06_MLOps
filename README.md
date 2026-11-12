@@ -16,7 +16,7 @@ la evidencia.
 | Modelo | YOLOv8n preentrenado (Ultralytics), `modelo/yolov8n.pt`, SHA-256 `f59b3d833e2ff32e194b5bb8e08d211dc7c5bdf144b90d2c8412c47ccfc83b36` |
 | Ejecución | Local, CPU. macOS 27.2 arm64 (Apple M4), Python 3.12, torch 2.15.0, ultralytics 8.4.211 |
 | Persistencia | SQLite (`evidencias/monitor.db`) + JSONL por ejecución + JPEG |
-| Portal | FastAPI + Jinja2: vistas de eventos y alertas, con detalle de evento, alerta, ventana, ejecución y configuración |
+| Portal | FastAPI + Jinja2: vistas de eventos y alertas, con detalle de evento, alerta, ventana, ejecución y configuración. Adicional: tablero histórico `/tablero` (ver [`EXTRAS.md`](EXTRAS.md)) |
 | Escenarios base | **C1** operación normal · **C2** baja confianza (desenfoque óptico real de la entrada) |
 
 **Índice de evidencias y mapa de criterios:** [`evidencias/indice.md`](evidencias/indice.md)
@@ -42,6 +42,7 @@ la evidencia.
                                                           │
                      Portal FastAPI: /eventos  /alertas  /eventos/{id}  /alertas/{id}
                                      /ventanas/{id}  /ejecuciones/{id}  /config/{ref}
+                                     /tablero (adicional F1)
 ```
 
 | Módulo | Responsabilidad |
@@ -53,7 +54,7 @@ la evidencia.
 | `src/monitor/metrics.py` | Métricas base por ventana (una por grupo) |
 | `src/monitor/store.py` | Esquema SQLite y escritura dual SQLite/JSONL |
 | `src/monitor/pipeline.py` | Orquesta la ejecución de un escenario y escribe el `manifest.json` |
-| `src/monitor/portal/` | Portal de consulta |
+| `src/monitor/portal/` | Portal de consulta; `dashboard.py` arma el tablero histórico (adicional F1) |
 | `scripts/` | Preparación de entradas, referencia, recálculo independiente y recorrido del portal |
 
 Documentación detallada:
@@ -104,6 +105,9 @@ uvicorn monitor.portal.app:app --port 8000      # http://127.0.0.1:8000
 
 # 6) Recorrido del portal con capturas de pantalla (evidencia)
 python scripts/capture_portal.py --c1 <id-c1> --c2 <id-c2>
+
+# 7) Adicional F1: verificación del tablero contra los JSONL + recorrido en el navegador
+python scripts/verify_dashboard.py --run-id <id-c2> --run-id <id-c1> --run-id <id-referencia>
 ```
 
 Cada ejecución dura unos 40 s porque respeta el ritmo nativo del video. Lo que produce:
