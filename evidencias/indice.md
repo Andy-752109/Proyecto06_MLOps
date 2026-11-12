@@ -8,12 +8,22 @@
 |---|---|---|
 | `6b84820` | Todo el código, la configuración, el modelo, los videos y la documentación base | `reference-20261112T162358Z` |
 | `872e7c5` | Agrega `config/reference.json` y la justificación de umbrales, generados por la ejecución de referencia. **No cambia código** | `c1-normal-20261112T162444Z`, `c2-baja-confianza-20261112T162525Z` |
-| commit siguiente («Evidencias C1/C2…») | Agrega las ejecuciones C1/C2, el recálculo, las capturas del portal y este índice. **No cambia** `src/`, `config/`, `scripts/` ni `modelo/` | — |
+| `0c66e90` | Agrega las ejecuciones C1/C2, el recálculo, las capturas del portal y este índice. **No cambia** `src/`, `config/`, `scripts/` ni `modelo/` | — |
+| `07e0e17` | Adicional S1 (cambia código) | `s1-interrupcion-20261112T175603Z` |
+| `257712f` | Adicional S2 (cambia código) | `s2-cambio-sostenido-20261112T181053Z` |
+| `e244ed1` | Adicionales F2–F4 (cambia código) | `s1-interrupcion-20261112T185945Z` (evidencia de la vista en vivo) |
 
-Cada `manifest.json` registra `git_commit` y `git_dirty`. Las tres ejecuciones tienen
-`git_dirty = false`, porque se hicieron con `src/ config/ scripts/ modelo/` sin cambios
-pendientes. Para comprobar que el código que generó C1/C2 es el mismo que se revisa:
-`git diff 872e7c5 HEAD -- src config scripts modelo` debe salir vacío.
+Las demás revisiones posteriores (F1, M1–M3 y correcciones menores) agregan código o
+evidencia, pero no generan ejecuciones nuevas; el detalle de cada adicional está en
+[`EXTRAS.md`](../EXTRAS.md).
+
+Cada `manifest.json` registra `git_commit` y `git_dirty`. Todas las ejecuciones versionadas
+tienen `git_dirty = false`, porque se hicieron con `src/ config/ scripts/ modelo/` sin cambios
+pendientes. El código de la base que generó C1/C2 es `872e7c5`
+(`git diff 872e7c5 HEAD -- src config scripts modelo` muestra solo lo que agregaron los
+adicionales). Para comprobar que esos cambios no alteran la base, C1 y C2 se volvieron a
+ejecutar con el código de `004cd03` en una copia aparte: los 198 eventos de cada una tienen las
+mismas detecciones, puntuaciones y zonas, y las ventanas y alertas coinciden (C1: 0, C2: 4).
 
 Identidad común a las tres ejecuciones:
 
@@ -142,7 +152,7 @@ en la cola durante el arranque del modelo se procesan seguidos. Todas las métri
 | R7.1 Reproducción | README (Instalación y Ejecución); `requirements.txt`; `pyproject.toml` |
 | R7.2 Evidencias | Este índice; `recalculo/`; `portal/recorrido.md` |
 | R7.3 Autoría | README (Autoría y componentes reutilizados) |
-| Extras | [`EXTRAS.md`](../EXTRAS.md): no se reclaman en esta revisión |
+| Extras | [`EXTRAS.md`](../EXTRAS.md): F1–F4, S1, S2 y M1–M3, cada uno con su verificación |
 
 ## Cómo reproducir y verificar
 
@@ -154,7 +164,7 @@ git clone https://github.com/Andy-752109/Proyecto06_MLOps.git p6 && cd p6
 python3.12 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt && pip install -e .
 python scripts/prepare_inputs.py                     # verifica SHA-256 de entradas y modelo
-python -m pytest -q                                  # 22 pruebas
+python -m pytest -q                                  # 48 pruebas
 python scripts/recalc_metrics.py --run-id reference-20261112T162358Z \
   --run-id c1-normal-20261112T162444Z --run-id c2-baja-confianza-20261112T162525Z   # 0 diferencias
 python -m monitor.pipeline --scenario c1-normal       # nueva ejecución C1 (≈40 s)
