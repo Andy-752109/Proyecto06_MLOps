@@ -1,0 +1,300 @@
+{
+ "db": "evidencias/revisiones.db",
+ "reviews": [
+  {
+   "review_id": 1,
+   "event_id": "c2-baja-confianza-20261112T162525Z-e00019",
+   "run_id": "c2-baja-confianza-20261112T162525Z",
+   "image_ref": "evidencias/runs/c2-baja-confianza-20261112T162525Z/capturas/c2-baja-confianza-20261112T162525Z-e00019.jpg",
+   "label": "imagen_degradada",
+   "note": null,
+   "reviewer": "Andrea",
+   "created_at": "2026-11-12T21:25:44.017Z",
+   "alert_ids": [
+    "c2-baja-confianza-20261112T162525Z-a01",
+    "c2-baja-confianza-20261112T162525Z-a02"
+   ]
+  },
+  {
+   "review_id": 2,
+   "event_id": "c2-baja-confianza-20261112T162525Z-e00020",
+   "run_id": "c2-baja-confianza-20261112T162525Z",
+   "image_ref": "evidencias/runs/c2-baja-confianza-20261112T162525Z/capturas/c2-baja-confianza-20261112T162525Z-e00020.jpg",
+   "label": "imagen_degradada",
+   "note": null,
+   "reviewer": "andrea",
+   "created_at": "2026-11-12T21:25:52.948Z",
+   "alert_ids": [
+    "c2-baja-confianza-20261112T162525Z-a01",
+    "c2-baja-confianza-20261112T162525Z-a02"
+   ]
+  },
+  {
+   "review_id": 3,
+   "event_id": "c2-baja-confianza-20261112T162525Z-e00020",
+   "run_id": "c2-baja-confianza-20261112T162525Z",
+   "image_ref": "evidencias/runs/c2-baja-confianza-20261112T162525Z/capturas/c2-baja-confianza-20261112T162525Z-e00020.jpg",
+   "label": "imagen_degradada",
+   "note": null,
+   "reviewer": "Andrea",
+   "created_at": "2026-11-12T21:26:07.131Z",
+   "alert_ids": [
+    "c2-baja-confianza-20261112T162525Z-a01",
+    "c2-baja-confianza-20261112T162525Z-a02"
+   ]
+  },
+  {
+   "review_id": 4,
+   "event_id": "c2-baja-confianza-20261112T162525Z-e00021",
+   "run_id": "c2-baja-confianza-20261112T162525Z",
+   "image_ref": "evidencias/runs/c2-baja-confianza-20261112T162525Z/capturas/c2-baja-confianza-20261112T162525Z-e00021.jpg",
+   "label": "imagen_degradada",
+   "note": null,
+   "reviewer": "Andrea",
+   "created_at": "2026-11-12T21:26:16.518Z",
+   "alert_ids": [
+    "c2-baja-confianza-20261112T162525Z-a01",
+    "c2-baja-confianza-20261112T162525Z-a02"
+   ]
+  },
+  {
+   "review_id": 5,
+   "event_id": "c2-baja-confianza-20261112T162525Z-e00024",
+   "run_id": "c2-baja-confianza-20261112T162525Z",
+   "image_ref": "evidencias/runs/c2-baja-confianza-20261112T162525Z/capturas/c2-baja-confianza-20261112T162525Z-e00024.jpg",
+   "label": "imagen_degradada",
+   "note": null,
+   "reviewer": "Andrea",
+   "created_at": "2026-11-12T21:26:26.447Z",
+   "alert_ids": [
+    "c2-baja-confianza-20261112T162525Z-a01",
+    "c2-baja-confianza-20261112T162525Z-a02"
+   ]
+  },
+  {
+   "review_id": 6,
+   "event_id": "c2-baja-confianza-20261112T162525Z-e00027",
+   "run_id": "c2-baja-confianza-20261112T162525Z",
+   "image_ref": "evidencias/runs/c2-baja-confianza-20261112T162525Z/capturas/c2-baja-confianza-20261112T162525Z-e00027.jpg",
+   "label": "imagen_degradada",
+   "note": null,
+   "reviewer": "Andrea",
+   "created_at": "2026-11-12T21:26:33.832Z",
+   "alert_ids": [
+    "c2-baja-confianza-20261112T162525Z-a01",
+    "c2-baja-confianza-20261112T162525Z-a02"
+   ]
+  },
+  {
+   "review_id": 7,
+   "event_id": "c2-baja-confianza-20261112T162525Z-e00030",
+   "run_id": "c2-baja-confianza-20261112T162525Z",
+   "image_ref": "evidencias/runs/c2-baja-confianza-20261112T162525Z/capturas/c2-baja-confianza-20261112T162525Z-e00030.jpg",
+   "label": "imagen_degradada",
+   "note": null,
+   "reviewer": "Andrea",
+   "created_at": "2026-11-12T21:26:44.629Z",
+   "alert_ids": [
+    "c2-baja-confianza-20261112T162525Z-a01",
+    "c2-baja-confianza-20261112T162525Z-a02"
+   ]
+  },
+  {
+   "review_id": 8,
+   "event_id": "c2-baja-confianza-20261112T162525Z-e00033",
+   "run_id": "c2-baja-confianza-20261112T162525Z",
+   "image_ref": "evidencias/runs/c2-baja-confianza-20261112T162525Z/capturas/c2-baja-confianza-20261112T162525Z-e00033.jpg",
+   "label": "imagen_degradada",
+   "note": null,
+   "reviewer": "Andrea",
+   "created_at": "2026-11-12T21:26:52.263Z",
+   "alert_ids": [
+    "c2-baja-confianza-20261112T162525Z-a01",
+    "c2-baja-confianza-20261112T162525Z-a02"
+   ]
+  },
+  {
+   "review_id": 9,
+   "event_id": "c2-baja-confianza-20261112T162525Z-e00036",
+   "run_id": "c2-baja-confianza-20261112T162525Z",
+   "image_ref": "evidencias/runs/c2-baja-confianza-20261112T162525Z/capturas/c2-baja-confianza-20261112T162525Z-e00036.jpg",
+   "label": "imagen_degradada",
+   "note": null,
+   "reviewer": "Andrea",
+   "created_at": "2026-11-12T21:27:01.766Z",
+   "alert_ids": [
+    "c2-baja-confianza-20261112T162525Z-a01",
+    "c2-baja-confianza-20261112T162525Z-a02"
+   ]
+  },
+  {
+   "review_id": 10,
+   "event_id": "c2-baja-confianza-20261112T162525Z-e00039",
+   "run_id": "c2-baja-confianza-20261112T162525Z",
+   "image_ref": "evidencias/runs/c2-baja-confianza-20261112T162525Z/capturas/c2-baja-confianza-20261112T162525Z-e00039.jpg",
+   "label": "imagen_degradada",
+   "note": null,
+   "reviewer": "Andrea",
+   "created_at": "2026-11-12T21:29:49.952Z",
+   "alert_ids": [
+    "c2-baja-confianza-20261112T162525Z-a01",
+    "c2-baja-confianza-20261112T162525Z-a02"
+   ]
+  },
+  {
+   "review_id": 11,
+   "event_id": "c2-baja-confianza-20261112T162525Z-e00040",
+   "run_id": "c2-baja-confianza-20261112T162525Z",
+   "image_ref": "evidencias/runs/c2-baja-confianza-20261112T162525Z/capturas/c2-baja-confianza-20261112T162525Z-e00040.jpg",
+   "label": "imagen_degradada",
+   "note": null,
+   "reviewer": "Andrea",
+   "created_at": "2026-11-12T21:30:01.924Z",
+   "alert_ids": [
+    "c2-baja-confianza-20261112T162525Z-a01",
+    "c2-baja-confianza-20261112T162525Z-a02"
+   ]
+  },
+  {
+   "review_id": 12,
+   "event_id": "s3-error-inferencia-20261112T205403Z-e00099",
+   "run_id": "s3-error-inferencia-20261112T205403Z",
+   "image_ref": "evidencias/runs/s3-error-inferencia-20261112T205403Z/capturas/s3-error-inferencia-20261112T205403Z-e00099.jpg",
+   "label": "omision",
+   "note": null,
+   "reviewer": "Andrea",
+   "created_at": "2026-11-12T21:41:02.792Z",
+   "alert_ids": [
+    "s3-error-inferencia-20261112T205403Z-a01"
+   ]
+  },
+  {
+   "review_id": 13,
+   "event_id": "s3-error-inferencia-20261112T205403Z-e00100",
+   "run_id": "s3-error-inferencia-20261112T205403Z",
+   "image_ref": "evidencias/runs/s3-error-inferencia-20261112T205403Z/capturas/s3-error-inferencia-20261112T205403Z-e00100.jpg",
+   "label": "confirma",
+   "note": null,
+   "reviewer": "Andrea",
+   "created_at": "2026-11-12T21:41:18.936Z",
+   "alert_ids": []
+  },
+  {
+   "review_id": 14,
+   "event_id": "s3-error-inferencia-20261112T205403Z-e00110",
+   "run_id": "s3-error-inferencia-20261112T205403Z",
+   "image_ref": "evidencias/runs/s3-error-inferencia-20261112T205403Z/capturas/s3-error-inferencia-20261112T205403Z-e00110.jpg",
+   "label": "falso_positivo",
+   "note": null,
+   "reviewer": "Andrea",
+   "created_at": "2026-11-12T21:41:31.862Z",
+   "alert_ids": []
+  },
+  {
+   "review_id": 15,
+   "event_id": "s3-error-inferencia-20261112T205403Z-e00120",
+   "run_id": "s3-error-inferencia-20261112T205403Z",
+   "image_ref": "evidencias/runs/s3-error-inferencia-20261112T205403Z/capturas/s3-error-inferencia-20261112T205403Z-e00120.jpg",
+   "label": "confirma",
+   "note": null,
+   "reviewer": "Andrea",
+   "created_at": "2026-11-12T21:41:39.095Z",
+   "alert_ids": []
+  }
+ ],
+ "checks": [
+  {
+   "what": "cada revisión apunta a un evento existente de su ejecución",
+   "expected": 15,
+   "observed": 15,
+   "ok": true
+  },
+  {
+   "what": "la imagen guardada es la del evento y el archivo existe",
+   "expected": 15,
+   "observed": 15,
+   "ok": true
+  },
+  {
+   "what": "las alertas guardadas con cada revisión son las que citan ese evento (alerts.jsonl)",
+   "expected": 15,
+   "observed": 15,
+   "ok": true
+  },
+  {
+   "what": "etiquetas dentro del catálogo y quien revisa identificado",
+   "expected": "15 con etiqueta de ['confirma', 'falso_positivo', 'omision', 'imagen_degradada', 'dudosa']",
+   "observed": 15,
+   "ok": true
+  },
+  {
+   "what": "registros de solo inserción: id y momento crecen juntos",
+   "expected": "orden creciente",
+   "observed": "creciente",
+   "ok": true
+  },
+  {
+   "what": "/api/revisiones devuelve las mismas revisiones en el mismo orden",
+   "expected": 15,
+   "observed": 15,
+   "ok": true
+  },
+  {
+   "what": "el resumen de revisión de cada alerta coincide con las revisiones vigentes",
+   "expected": [
+    "10 de 26",
+    "10 de 26",
+    "1 de 22"
+   ],
+   "observed": [
+    "10 de 26",
+    "10 de 26",
+    "1 de 22"
+   ],
+   "ok": true
+  },
+  {
+   "what": "historial de e00020: 2 revisiones y la vigente es la última",
+   "expected": "2, vigente imagen_degradada",
+   "observed": "2",
+   "ok": true
+  }
+ ],
+ "alerts": [
+  {
+   "alert_id": "c2-baja-confianza-20261112T162525Z-a01",
+   "expected": "10 de 26",
+   "portal": "10 de 26"
+  },
+  {
+   "alert_id": "c2-baja-confianza-20261112T162525Z-a02",
+   "expected": "10 de 26",
+   "portal": "10 de 26"
+  },
+  {
+   "alert_id": "s3-error-inferencia-20261112T205403Z-a01",
+   "expected": "1 de 22",
+   "portal": "1 de 22"
+  }
+ ],
+ "shots": [
+  {
+   "png": "humanas-01-galeria-revisadas.png",
+   "url": "/capturas?review=confirma",
+   "status": 200,
+   "what": "Galería filtrada por la etiqueta vigente de la última revisión"
+  },
+  {
+   "png": "humanas-02-historial.png",
+   "url": "/capturas/c2-baja-confianza-20261112T162525Z-e00020",
+   "status": 200,
+   "what": "Captura con más de una revisión: historial y vigente"
+  },
+  {
+   "png": "humanas-03-alerta.png",
+   "url": "/alertas/c2-baja-confianza-20261112T162525Z-a01",
+   "status": 200,
+   "what": "Resumen de revisión dentro de la alerta"
+  }
+ ]
+}

@@ -332,14 +332,22 @@ historial y estado vigente.
 
 **Honestidad de la demostración.** Las revisiones van firmadas como `demo-automatizada` y
 solo usan etiquetas verdaderas por construcción (las capturas de C2 vienen de la entrada
-desenfocada). La nota de cada una lo declara. No son revisiones humanas. La base real
-`evidencias/revisiones.db` queda vacía para la autora.
+desenfocada). La nota de cada una lo declara. No son revisiones humanas.
+
+**Uso humano.** Además, la autora revisó capturas en el portal, en la base real
+`evidencias/revisiones.db`: **15 revisiones de 14 capturas** de C2 y S3, con 4 etiquetas
+distintas (`imagen_degradada`, `confirma`, `omision`, `falso_positivo`) y una captura
+re-etiquetada con historial. `scripts/summarize_reviews.py` contrasta cada revisión con
+`events.jsonl` y `alerts.jsonl` (evento, imagen y alertas) y con lo que muestra el portal
+(API, resumen por alerta e historial): 8 comprobaciones, 0 fallas, en
+[`evidencias/revisiones/humanas.md`](evidencias/revisiones/humanas.md).
 
 **Condiciones del nivel 15 y dónde se cumplen.**
 
 | Condición de la rúbrica | Evidencia |
 |---|---|
 | Flujo compuesto | Galería filtrada → captura con cajas → etiqueta y nota → "Guardar y siguiente sin revisar" → resumen en la alerta (`evidencias/revisiones/01…06-*.png`) |
+| Evidencia de uso | 15 revisiones humanas de la autora sobre C2 y S3, verificadas contra los registros y el portal (`evidencias/revisiones/humanas.md`) |
 | Integración adicional | Une la base de monitoreo (solo lectura: eventos, imágenes, alertas) con una base propia de revisiones, y la API `POST /api/capturas/{id}/revision` |
 | Coordinación de estados | Revisión vigente frente a historial, siguiente sin revisar por ejecución, filtro por etiqueta vigente y resumen por alerta |
 | Persistencia | `revisiones.db` (registros de solo inserción, nunca se sobrescriben) |

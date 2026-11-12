@@ -127,6 +127,7 @@ python scripts/recalc_extra.py  --run-id <id-referencia> --run-id <id-c1> --run-
 # 10) Adicionales F2–F4: exportación, revisión de capturas y vista en vivo
 python scripts/verify_export.py --run-id <id-c2> --run-id <id-s1>
 python scripts/demo_reviews.py --c2 <id-c2>          # base de demostración aparte
+python scripts/summarize_reviews.py                   # verifica las revisiones humanas de revisiones.db
 python scripts/demo_live.py --scenario s1-interrupcion  # crea una ejecución nueva con --live
 #    Uso manual de la vista en vivo: en una terminal el portal y en otra
 #    python -m monitor.pipeline --scenario c1-normal --live   → http://127.0.0.1:8000/en-vivo
