@@ -28,7 +28,8 @@ tienen `git_dirty = false`, porque se hicieron con `src/ config/ scripts/ modelo
 pendientes. El código de la base que generó C1/C2 es `872e7c5`
 (`git diff 872e7c5 HEAD -- src config scripts modelo` muestra solo lo que agregaron los
 adicionales). Para comprobar que esos cambios no alteran la base, C1 y C2 se volvieron a
-ejecutar con el código de `004cd03` en una copia aparte: los 198 eventos de cada una tienen las
+ejecutar con el código de `004cd03` y de nuevo con `d0be4f8` (tras S3, F5 y el rediseño), en copias
+aparte: los 198 eventos de cada una tienen las
 mismas detecciones, puntuaciones y zonas, y las ventanas y alertas coinciden (C1: 0, C2: 4).
 
 Identidad común a las tres ejecuciones:
@@ -65,7 +66,7 @@ referencia, resumen), `config.snapshot.json`, `events.jsonl`, `detections.jsonl`
   cumplió**, y no por falta de datos. Las métricas base de C1 están abajo.
 - **Portal**: [02-c1-eventos](portal/02-c1-eventos.png), [03-c1-evento](portal/03-c1-evento.png),
   [04-c1-ejecucion](portal/04-c1-ejecucion.png), [05-c1-alertas](portal/05-c1-alertas.png).
-- **Recálculo**: [recalculo/c1-normal-20261112T162444Z.md](recalculo/c1-normal-20261112T162444Z.md), 113 comprobaciones y 0 diferencias.
+- **Recálculo**: [recalculo/c1-normal-20261112T162444Z.md](recalculo/c1-normal-20261112T162444Z.md), 114 comprobaciones y 0 diferencias.
 
 ## C2 · Baja confianza
 
@@ -91,7 +92,7 @@ referencia, resumen), `config.snapshot.json`, `events.jsonl`, `detections.jsonl`
   [08-c2-alertas](portal/08-c2-alertas.png), [09-c2-alerta](portal/09-c2-alerta.png),
   [10-c2-ventana](portal/10-c2-ventana.png), [11-c2-ejecucion](portal/11-c2-ejecucion.png).
   El recorrido completo está en [portal/recorrido.md](portal/recorrido.md).
-- **Recálculo**: [recalculo/c2-baja-confianza-20261112T162525Z.md](recalculo/c2-baja-confianza-20261112T162525Z.md), 113 comprobaciones y 0 diferencias. Incluye la comprobación de que `baja-confianza-v1` debía abrirse exactamente en w000 y w004.
+- **Recálculo**: [recalculo/c2-baja-confianza-20261112T162525Z.md](recalculo/c2-baja-confianza-20261112T162525Z.md), 114 comprobaciones y 0 diferencias. Incluye la comprobación de que `baja-confianza-v1` debía abrirse exactamente en w000 y w004.
 
 ## Cadena de una muestra (C2)
 

@@ -16,9 +16,9 @@ la evidencia.
 | Modelo | YOLOv8n preentrenado (Ultralytics), `modelo/yolov8n.pt`, SHA-256 `f59b3d833e2ff32e194b5bb8e08d211dc7c5bdf144b90d2c8412c47ccfc83b36` |
 | Ejecución | Local, CPU. macOS 27.2 arm64 (Apple M4), Python 3.12, torch 2.15.0, ultralytics 8.4.211 |
 | Persistencia | SQLite (`evidencias/monitor.db`) + JSONL por ejecución + JPEG |
-| Portal | FastAPI + Jinja2: vistas de eventos y alertas, con detalle de evento, alerta, ventana, ejecución y configuración. Adicional: tablero histórico `/tablero` (ver [`EXTRAS.md`](EXTRAS.md)) |
+| Portal | FastAPI + Jinja2: inicio con resumen, vistas de eventos y alertas, con detalle de evento, alerta, ventana, ejecución y configuración. Adicionales: tablero `/tablero` (F1), exportación (F2), revisión de capturas (F3), vista en vivo (F4) y filtros avanzados de eventos (F5) (ver [`EXTRAS.md`](EXTRAS.md)) |
 | Escenarios base | **C1** operación normal · **C2** baja confianza (desenfoque óptico real de la entrada) |
-| Escenarios adicionales | **S1** interrupción del stream con reconexión y recuperación · **S2** cambio sostenido normal → desenfocado → normal (ver [`EXTRAS.md`](EXTRAS.md)) |
+| Escenarios adicionales | **S1** interrupción del stream con reconexión y recuperación · **S2** cambio sostenido normal → desenfocado → normal · **S3** error de inferencia con recarga del modelo y recuperación (ver [`EXTRAS.md`](EXTRAS.md)) |
 
 **Índice de evidencias y mapa de criterios:** [`evidencias/indice.md`](evidencias/indice.md)
 
@@ -41,7 +41,7 @@ la evidencia.
                                                           │
                      SQLite + JSONL (evidencias/runs/<run_id>/) + capturas/
                                                           │
-                     Portal FastAPI: /eventos  /alertas  /eventos/{id}  /alertas/{id}
+                     Portal FastAPI: /eventos (filtros F5)  /alertas  /eventos/{id}  /alertas/{id}
                                      /ventanas/{id}  /ejecuciones/{id}  /config/{ref}
                                      /tablero (F1)  /exportar/eventos.{csv,jsonl} (F2)
                                      /capturas (F3)  /en-vivo (F4, con --live)
@@ -55,7 +55,8 @@ la evidencia.
 | `src/monitor/rules.py` | Estado de la ventana, reglas y ciclo de vida de las alertas |
 | `src/monitor/metrics.py` | Métricas base por ventana (una por grupo) |
 | `src/monitor/store.py` | Esquema SQLite y escritura dual SQLite/JSONL |
-| `src/monitor/pipeline.py` | Orquesta la ejecución de un escenario y escribe el `manifest.json` |
+| `src/monitor/pipeline.py` | Orquesta la ejecución de un escenario y escribe el `manifest.json`. En S3: fallo de inferencia inyectado, recarga del modelo con verificación de SHA-256 y registro de la recuperación |
+| `src/monitor/portal/` | Portal: `app.py` (rutas, filtros y exportación), `dashboard.py` (F1), `reviews.py` (F3) y plantillas |
 | `src/monitor/portal/` | Portal de consulta; `dashboard.py` arma el tablero histórico (adicional F1) |
 | `scripts/` | Preparación de entradas, referencia, recálculo independiente y recorrido del portal |
 
@@ -162,7 +163,10 @@ siempre escribe en la base configurada en `config/monitor.yaml → storage`.
   y 30 detecciones), reglas de alerta, política de captura y almacenamiento. Su hash es el `config_ref`.
 - `config/scenarios.yaml`: fuente de cada escenario (ruta, SHA-256, tramo de frames,
   muestreo, cola). C1 y C2 comparten el `config_ref` y solo difieren en la fuente. S1 también
-  lo comparte; su fuente declara además la falla inyectada y el watchdog.
+  lo comparte; su fuente declara además la falla inyectada y el watchdog. S2 declara el tramo
+  desenfocado y S3 el tramo con fallo de inferencia.
+- `config/monitor.yaml → recovery`: cada cuántos errores consecutivos se recarga el modelo (S3).
+  No cambia política, ventanas ni reglas, por eso no entra en `config_ref`.
 - `config/reference.json`: referencia generada a partir de observaciones reales.
 
 ## Autoría, aportación propia y componentes reutilizados

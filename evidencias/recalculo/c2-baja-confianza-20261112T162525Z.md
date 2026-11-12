@@ -7,7 +7,7 @@ Fuentes primarias: `events.jsonl` (puntuaciones crudas de cada detección, tiemp
 `resources.jsonl`, `alerts.jsonl`, `config.snapshot.json`. Las zonas se recalculan desde la
 puntuación con los umbrales del snapshot; no se usan los contadores guardados por el monitor.
 
-**Comprobaciones: 113 · diferencias: 0**
+**Comprobaciones: 114 · diferencias: 0**
 
 Diferencias:
 - ninguna
@@ -29,6 +29,7 @@ Diferencias:
   "inference_ms_p95": 48.745,
   "frames_without_detections": 3,
   "errors": 0,
+  "source_gaps": 0,
   "captures": 82
 }
 ```

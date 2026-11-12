@@ -2,7 +2,7 @@
   "run_id": "c2-baja-confianza-20261112T162525Z",
   "git_commit": "872e7c58a97e8f5eb46e80b8afaeb1fa467429e2",
   "config_ref": "cfg-517d02606b3e",
-  "n_checks": 113,
+  "n_checks": 114,
   "n_failed": 0,
   "failed": [],
   "run_level": {
@@ -19,6 +19,7 @@
     "inference_ms_p95": 48.745,
     "frames_without_detections": 3,
     "errors": 0,
+    "source_gaps": 0,
     "captures": 82
   },
   "windows": [
@@ -864,6 +865,12 @@
         "c2-baja-confianza-20261112T162525Z-w000",
         "c2-baja-confianza-20261112T162525Z-w004"
       ],
+      "ok": true
+    },
+    {
+      "what": "evidencia-insuficiente-v1 (apertura, resolución)",
+      "stored": [],
+      "recalc": [],
       "ok": true
     },
     {
