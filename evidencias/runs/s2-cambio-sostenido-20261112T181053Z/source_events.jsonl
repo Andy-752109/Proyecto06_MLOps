@@ -1,0 +1,2 @@
+{"run_id": "s2-cambio-sostenido-20261112T181053Z", "seq": 0, "ts": "2026-11-12T18:11:02.341Z", "kind": "switch_on", "detail": {"frame_index": 480, "path": "data/videos/vtest_blur7.avi"}}
+{"run_id": "s2-cambio-sostenido-20261112T181053Z", "seq": 1, "ts": "2026-11-12T18:11:26.341Z", "kind": "switch_off", "detail": {"frame_index": 720, "path": "data/videos/vtest.avi"}}

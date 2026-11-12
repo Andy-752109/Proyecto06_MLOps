@@ -9,6 +9,7 @@ informativos, y la regla `evidencia-insuficiente-v1`.
 |---|---|---|---|---|
 | F1 | F (funcionalidad) | Tablero histórico por ventana: gráficas de las métricas base G1–G7 con comparación de ejecuciones | 15 | [`evidencias/tablero/verificacion.md`](evidencias/tablero/verificacion.md) |
 | S1 | S (escenario) | Interrupción del stream: corte de 15 s, diagnóstico por watchdog, reconexión con reintentos, recuperación y verificación posterior contra C1 | 10 | [`evidencias/escenarios/s1-interrupcion.md`](evidencias/escenarios/s1-interrupcion.md) |
+| S2 | S (escenario) | Cambio sostenido de confianza: normal → desenfocado → normal, con apertura y resolución de `cambio-sostenido-v1` | 8 | [`evidencias/escenarios/s2-cambio-sostenido.md`](evidencias/escenarios/s2-cambio-sostenido.md) |
 
 ## F1 · Tablero histórico por ventana (`/tablero`, `/api/tablero`)
 
@@ -121,4 +122,77 @@ python -m pytest -q tests/test_source_gap.py
 python -m monitor.pipeline --scenario s1-interrupcion            # ~40 s
 python scripts/recalc_metrics.py --run-id <id-s1>
 python scripts/verify_s1.py --run-id <id-s1> --c1 c1-normal-20261112T162444Z
+```
+
+## S2 · Cambio sostenido: normal → desenfocado → normal (`s2-cambio-sostenido`)
+
+**Entrada.** El mismo tramo, la misma configuración, el mismo modelo y la misma referencia
+que C1/C2. Entre los frames 480 y 719 la fuente entrega el frame del mismo índice del video
+desenfocado de C2 (`config/scenarios.yaml → source.switch`). Ese tramo son exactamente las
+ventanas 2–7, así que ninguna ventana mezcla entradas.
+
+**Esperado antes de ejecutar.** C1 y C2 ya observaron esos frames, así que cada ventana de S2
+debe repetir la del mismo índice de C1 (normal) o de C2 (desenfocada). `scripts/verify_s2.py`
+aplica las reglas con una implementación propia (no `monitor.rules`) a esas ventanas
+predichas:
+
+| Regla | Abre en | Se resuelve en |
+|---|---|---|
+| baja-confianza-v1 | w002 | w003 |
+| baja-confianza-v1 | w004 | w008 |
+| cambio-sostenido-v1 (Δ ≥ 0.15 vs. referencia 0.183, 3 ventanas) | w006 | w008 |
+
+**Observado.** `s2-cambio-sostenido-20261112T181053Z`, commit `257712f`, `git_dirty=false`.
+
+| Etapa | Ventanas | Qué pasa |
+|---|---|---|
+| Normal | w000–w001 | `low_prop` 0.148 / 0.156, sin alertas |
+| Transición | w002 | `switch_on` en el frame 480. `low_prop` 0.583 (Δ +0.401): abre `baja-confianza-v1` (a01); la regla sostenida acumula 1/3 |
+| Variación transitoria | w003 | `low_prop` 0.289 (Δ +0.107 < 0.15). a01 se resuelve y la racha sostenida se reinicia: un cambio breve no basta para la regla sostenida |
+| Persistencia | w004–w007 | `low_prop` 0.614–0.724. Abre a02 (baja confianza); la regla sostenida acumula 1/3 y 2/3 y abre **a03 (`cambio-sostenido-v1`, high)** en w006; ambas siguen en w007 |
+| Recuperación | w008 | `switch_off` en el frame 720. `low_prop` 0.089: a02 y a03 se resuelven en la primera ventana normal |
+| Verificación posterior | w008–w009 | Elegibles, por debajo de 0.40, sin alertas abiertas al terminar |
+
+`scripts/verify_s2.py` comprueba 21 expectativas, y **las 21 se cumplen**:
+
+- Las 10 ventanas tienen `n_valid`, `n_dets`, `n_low`, `low_prop` y estado idénticos a los de
+  la ventana correspondiente de C1 o C2.
+- Los 198 frames inferidos tienen las mismas puntuaciones que el mismo frame de C1
+  (normales) o de C2 (desenfocados).
+- Las alertas se abren y se resuelven donde lo predice la derivación independiente, y la
+  regla sostenida acumula 1/3 y 2/3 antes de abrirse.
+- Las capturas vinculadas existen.
+
+El recálculo independiente (`evidencias/recalculo/s2-cambio-sostenido-20261112T181053Z.md`)
+da 114 comprobaciones y 0 diferencias.
+
+**Portal.** `evidencias/escenarios/s2-01…04-*.png`:
+
+- la ejecución, con los cambios de entrada;
+- las alertas, todas resueltas;
+- el detalle de la alerta sostenida, con el Δ por ventana y sus capturas;
+- el tablero con S2 entre C1 y C2: S2 sigue a C1, sube con C2 y vuelve a C1.
+
+**Por qué se solicita el nivel 8.** Es una secuencia temporal adicional con transición
+(normal → desenfocado), persistencia (la regla sostenida exige 3 ventanas e ignora la
+variación transitoria de w003) y recuperación (vuelta a normal y resolución). Los registros
+están vinculados y las expectativas se verificaron de antemano. No se solicita el nivel 10:
+no hay un fallo técnico con reacción automática, solo un cambio de condiciones.
+
+**Sin doble conteo.**
+
+- C2 ya abre `cambio-sostenido-v1`, pero nunca vuelve a la normalidad: su alerta a04 sigue
+  abierta al final. S2 aporta lo que C2 no demuestra: entrada desde operación normal,
+  persistencia frente a una variación breve y resolución al recuperarse.
+- No se reclama de nuevo la baja confianza aislada de C2.
+- S2 no comparte evidencia de etapa con S1.
+
+**Reproducir.**
+
+```bash
+python -m pytest -q tests/test_source_switch.py
+python -m monitor.pipeline --scenario s2-cambio-sostenido        # ~40 s
+python scripts/recalc_metrics.py --run-id <id-s2>
+python scripts/verify_s2.py --run-id <id-s2> --c1 c1-normal-20261112T162444Z \
+  --c2 c2-baja-confianza-20261112T162525Z
 ```
