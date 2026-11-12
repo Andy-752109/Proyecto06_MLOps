@@ -132,6 +132,14 @@ python scripts/demo_live.py --scenario s1-interrupcion  # crea una ejecución nu
 
 # 11) Adicional F1: verificación del tablero contra los JSONL + recorrido en el navegador
 python scripts/verify_dashboard.py --run-id <id-c2> --run-id <id-c1> --run-id <id-referencia>
+
+# 12) Adicional S3: error de inferencia con recarga del modelo (~40 s) y verificación contra C1
+python -m monitor.pipeline --scenario s3-error-inferencia
+python scripts/recalc_metrics.py --run-id <id-s3>
+python scripts/verify_s3.py --run-id <id-s3> --c1 <id-c1>
+
+# 13) Adicional F5: filtros avanzados de eventos verificados contra los JSONL
+python scripts/verify_filters.py --c2 <id-c2> --s3 <id-s3>
 ```
 
 Cada ejecución dura unos 40 s porque respeta el ritmo nativo del video. Lo que produce:

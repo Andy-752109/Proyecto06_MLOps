@@ -159,3 +159,22 @@ original. Los cambios quedan como `switch_on` / `switch_off` en `source_events`.
 El tramo coincide con las ventanas 2–7, así que ninguna ventana mezcla entradas y cada una
 se puede comparar con la ventana del mismo índice de C1 o de C2. La configuración, el modelo
 y la referencia son los de C1/C2.
+
+## 10. Escenario adicional S3: error de inferencia y recarga del modelo
+
+Esta sección solo aplica a `s3-error-inferencia` (`config/scenarios.yaml →
+source.fault_injection.inference_error`). La fuente entrega los frames con normalidad; para
+los frames con índice en [500, 600) la llamada al modelo lanza `InjectedInferenceError`.
+
+- **Evento**: estado `error`, con frame, `model_sha256` y el detalle en `error`, sin
+  detecciones, `inference_ms` ni `max_score`. No es confianza 0 y no entra en G1 ni en G4.
+  La política de captura lo trata como frame señalado (motivo `error`, máx. 1 cada 3).
+- **Ventanas**: un error ocupa un lugar pero no es un frame válido; con menos de 15 frames
+  válidos la ventana queda insuficiente y aplica lo de la §5.
+- **Reacción** (`config/monitor.yaml → recovery.reload_after_errors`, fuera de `config_ref`
+  porque no cambia política, ventanas ni reglas; se guarda en el manifest): cada 20 errores
+  consecutivos el monitor recarga el modelo desde disco y comprueba su SHA-256
+  (`detector_reloaded`). El primer error y la recuperación quedan como `inference_failed` e
+  `inference_recovered`. Estos registros van a la misma línea de tiempo que los de la fuente
+  (`source_events`).
+- S3 comparte `config_ref` y modelo con C1/C2; los frames inferidos son comparables con C1.

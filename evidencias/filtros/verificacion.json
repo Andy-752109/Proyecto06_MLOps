@@ -1,0 +1,478 @@
+{
+ "checks": [
+  {
+   "case": "rango de puntuación en zona de duda",
+   "filters": {
+    "run_id": "c2-baja-confianza-20261112T162525Z",
+    "score_min": 0.4,
+    "score_max": 0.7
+   },
+   "expected": 158,
+   "api": 158,
+   "csv": 158,
+   "html": 158,
+   "same_order": true,
+   "first": [
+    "c2-baja-confianza-20261112T162525Z-e00000",
+    "c2-baja-confianza-20261112T162525Z-e00010",
+    "c2-baja-confianza-20261112T162525Z-e00012"
+   ],
+   "ok": true
+  },
+  {
+   "case": "puntuación ≥ 0.8 en todas las ejecuciones, orden ↓",
+   "filters": {
+    "score_min": 0.8,
+    "sort": "score_desc"
+   },
+   "expected": 790,
+   "api": 790,
+   "csv": 790,
+   "html": 790,
+   "same_order": true,
+   "first": [
+    "reference-20261112T162358Z-e00046",
+    "reference-20261112T162358Z-e00007",
+    "c1-normal-20261112T162444Z-e00127"
+   ],
+   "ok": true
+  },
+  {
+   "case": "puntuación baja ↑ (los eventos sin puntuación no entran)",
+   "filters": {
+    "score_max": 0.3,
+    "sort": "score_asc"
+   },
+   "expected": 13,
+   "api": 13,
+   "csv": 13,
+   "html": 13,
+   "same_order": true,
+   "first": [
+    "c2-baja-confianza-20261112T162525Z-e00003",
+    "c2-baja-confianza-20261112T162525Z-e00007",
+    "c2-baja-confianza-20261112T162525Z-e00041"
+   ],
+   "ok": true
+  },
+  {
+   "case": "frames concurridos: ≥ 8 detecciones, orden por detecciones",
+   "filters": {
+    "dets_min": 8,
+    "sort": "dets_desc"
+   },
+   "expected": 308,
+   "api": 308,
+   "csv": 308,
+   "html": 308,
+   "same_order": true,
+   "first": [
+    "reference-20261112T162358Z-e00072",
+    "reference-20261112T162358Z-e00073",
+    "reference-20261112T162358Z-e00085"
+   ],
+   "ok": true
+  },
+  {
+   "case": "pocas detecciones en C2 (0 a 1)",
+   "filters": {
+    "run_id": "c2-baja-confianza-20261112T162525Z",
+    "dets_min": 0,
+    "dets_max": 1
+   },
+   "expected": 10,
+   "api": 10,
+   "csv": 10,
+   "html": 10,
+   "same_order": true,
+   "first": [
+    "c2-baja-confianza-20261112T162525Z-e00001",
+    "c2-baja-confianza-20261112T162525Z-e00002",
+    "c2-baja-confianza-20261112T162525Z-e00003"
+   ],
+   "ok": true
+  },
+  {
+   "case": "intervalo de captura (ventanas 2–3 de C2)",
+   "filters": {
+    "since": "2026-11-12T16:25:33.938Z",
+    "until": "2026-11-12T16:25:41.741Z"
+   },
+   "expected": 40,
+   "api": 40,
+   "csv": 40,
+   "html": 40,
+   "same_order": true,
+   "first": [
+    "c2-baja-confianza-20261112T162525Z-e00040",
+    "c2-baja-confianza-20261112T162525Z-e00041",
+    "c2-baja-confianza-20261112T162525Z-e00042"
+   ],
+   "ok": true
+  },
+  {
+   "case": "hasta la mitad de C2, más recientes primero",
+   "filters": {
+    "run_id": "c2-baja-confianza-20261112T162525Z",
+    "until": "2026-11-12T16:25:45.738Z",
+    "sort": "recent"
+   },
+   "expected": 100,
+   "api": 100,
+   "csv": 100,
+   "html": 100,
+   "same_order": true,
+   "first": [
+    "c2-baja-confianza-20261112T162525Z-e00099",
+    "c2-baja-confianza-20261112T162525Z-e00098",
+    "c2-baja-confianza-20261112T162525Z-e00097"
+   ],
+   "ok": true
+  },
+  {
+   "case": "ventana 3 de S3 (solo errores)",
+   "filters": {
+    "run_id": "s3-error-inferencia-20261112T205403Z",
+    "window": 3
+   },
+   "expected": 20,
+   "api": 20,
+   "csv": 20,
+   "html": 20,
+   "same_order": true,
+   "first": [
+    "s3-error-inferencia-20261112T205403Z-e00060",
+    "s3-error-inferencia-20261112T205403Z-e00061",
+    "s3-error-inferencia-20261112T205403Z-e00062"
+   ],
+   "ok": true
+  },
+  {
+   "case": "motivo de captura 'error'",
+   "filters": {
+    "reason": "error"
+   },
+   "expected": 17,
+   "api": 17,
+   "csv": 17,
+   "html": 17,
+   "same_order": true,
+   "first": [
+    "s3-error-inferencia-20261112T205403Z-e00050",
+    "s3-error-inferencia-20261112T205403Z-e00053",
+    "s3-error-inferencia-20261112T205403Z-e00056"
+   ],
+   "ok": true
+  },
+  {
+   "case": "eventos que sustentan alguna alerta en C2",
+   "filters": {
+    "run_id": "c2-baja-confianza-20261112T162525Z",
+    "in_alert": true
+   },
+   "expected": 178,
+   "api": 178,
+   "csv": 178,
+   "html": 178,
+   "same_order": true,
+   "first": [
+    "c2-baja-confianza-20261112T162525Z-e00000",
+    "c2-baja-confianza-20261112T162525Z-e00001",
+    "c2-baja-confianza-20261112T162525Z-e00002"
+   ],
+   "ok": true
+  },
+  {
+   "case": "id contiene e0004",
+   "filters": {
+    "run_id": "c2-baja-confianza-20261112T162525Z",
+    "q": "e0004"
+   },
+   "expected": 10,
+   "api": 10,
+   "csv": 10,
+   "html": 10,
+   "same_order": true,
+   "first": [
+    "c2-baja-confianza-20261112T162525Z-e00040",
+    "c2-baja-confianza-20261112T162525Z-e00041",
+    "c2-baja-confianza-20261112T162525Z-e00042"
+   ],
+   "ok": true
+  },
+  {
+   "case": "inferencia más lenta primero (nulos al final)",
+   "filters": {
+    "run_id": "s3-error-inferencia-20261112T205403Z",
+    "sort": "inference_desc"
+   },
+   "expected": 198,
+   "api": 198,
+   "csv": 198,
+   "html": 198,
+   "same_order": true,
+   "first": [
+    "s3-error-inferencia-20261112T205403Z-e00000",
+    "s3-error-inferencia-20261112T205403Z-e00127",
+    "s3-error-inferencia-20261112T205403Z-e00100"
+   ],
+   "ok": true
+  },
+  {
+   "case": "extremo a extremo más lento primero",
+   "filters": {
+    "run_id": "c2-baja-confianza-20261112T162525Z",
+    "sort": "e2e_desc"
+   },
+   "expected": 198,
+   "api": 198,
+   "csv": 198,
+   "html": 198,
+   "same_order": true,
+   "first": [
+    "c2-baja-confianza-20261112T162525Z-e00000",
+    "c2-baja-confianza-20261112T162525Z-e00001",
+    "c2-baja-confianza-20261112T162525Z-e00002"
+   ],
+   "ok": true
+  },
+  {
+   "case": "combinada: C2, baja, con captura, en alerta, 2–6 detecciones, ↓",
+   "filters": {
+    "run_id": "c2-baja-confianza-20261112T162525Z",
+    "zone": "low",
+    "captured": true,
+    "in_alert": true,
+    "dets_min": 2,
+    "dets_max": 6,
+    "sort": "score_desc"
+   },
+   "expected": 12,
+   "api": 12,
+   "csv": 12,
+   "html": 12,
+   "same_order": true,
+   "first": [
+    "c2-baja-confianza-20261112T162525Z-e00180",
+    "c2-baja-confianza-20261112T162525Z-e00040",
+    "c2-baja-confianza-20261112T162525Z-e00009"
+   ],
+   "ok": true
+  },
+  {
+   "case": "agregar filtros solo reduce el resultado (C2 → baja → captura → alerta → s ≤ 0.35)",
+   "filters": {
+    "run_id": "c2-baja-confianza-20261112T162525Z",
+    "zone": "low",
+    "captured": true,
+    "in_alert": true,
+    "score_max": 0.35
+   },
+   "expected": [
+    198,
+    25,
+    13,
+    13,
+    8
+   ],
+   "api": [
+    198,
+    25,
+    13,
+    13,
+    8
+   ],
+   "csv": "—",
+   "html": "—",
+   "same_order": true,
+   "first": [],
+   "ok": true
+  },
+  {
+   "case": "cada etiqueta × quita solo su filtro",
+   "filters": {
+    "run_id": "c2-baja-confianza-20261112T162525Z",
+    "zone": "low",
+    "captured": true
+   },
+   "expected": [
+    [
+     "run_id"
+    ],
+    [
+     "zone"
+    ],
+    [
+     "captured"
+    ]
+   ],
+   "api": [
+    [
+     "run_id"
+    ],
+    [
+     "zone"
+    ],
+    [
+     "captured"
+    ]
+   ],
+   "csv": "—",
+   "html": 3,
+   "same_order": true,
+   "first": [],
+   "ok": true
+  }
+ ],
+ "errors": [
+  {
+   "case": "rango de puntuación invertido (página)",
+   "url": "/eventos",
+   "params": {
+    "score_min": 0.9,
+    "score_max": 0.1
+   },
+   "expected": 422,
+   "status": 422,
+   "text": "es mayor que",
+   "found": true,
+   "ok": true
+  },
+  {
+   "case": "puntuación fuera de [0, 1] (API)",
+   "url": "/api/eventos",
+   "params": {
+    "score_min": 1.5
+   },
+   "expected": 422,
+   "status": 422,
+   "text": "fuera del rango",
+   "found": true,
+   "ok": true
+  },
+  {
+   "case": "puntuación no numérica (exportación)",
+   "url": "/exportar/eventos.csv",
+   "params": {
+    "score_max": "alta"
+   },
+   "expected": 422,
+   "status": 422,
+   "text": "no es un número",
+   "found": true,
+   "ok": true
+  },
+  {
+   "case": "fecha inválida (página)",
+   "url": "/eventos",
+   "params": {
+    "since": "ayer"
+   },
+   "expected": 422,
+   "status": 422,
+   "text": "fecha inválida",
+   "found": true,
+   "ok": true
+  },
+  {
+   "case": "intervalo invertido (API)",
+   "url": "/api/eventos",
+   "params": {
+    "since": "2026-11-12T16:25:41.741Z",
+    "until": "2026-11-12T16:25:33.938Z"
+   },
+   "expected": 422,
+   "status": 422,
+   "text": "es mayor que",
+   "found": true,
+   "ok": true
+  },
+  {
+   "case": "orden desconocido (API)",
+   "url": "/api/eventos",
+   "params": {
+    "sort": "azar"
+   },
+   "expected": 422,
+   "status": 422,
+   "text": "orden desconocido",
+   "found": true,
+   "ok": true
+  },
+  {
+   "case": "detecciones negativas (página)",
+   "url": "/eventos",
+   "params": {
+    "dets_min": -1
+   },
+   "expected": 422,
+   "status": 422,
+   "text": "fuera del rango",
+   "found": true,
+   "ok": true
+  },
+  {
+   "case": "consulta válida sin resultados (página)",
+   "url": "/eventos",
+   "params": {
+    "run_id": "c2-baja-confianza-20261112T162525Z",
+    "status": "error"
+   },
+   "expected": 200,
+   "status": 200,
+   "text": "Ningún evento coincide",
+   "found": true,
+   "ok": true
+  },
+  {
+   "case": "consulta válida sin resultados (API)",
+   "url": "/api/eventos",
+   "params": {
+    "score_min": 0.99
+   },
+   "expected": 200,
+   "status": 200,
+   "text": "\"total\":0",
+   "found": true,
+   "ok": true
+  }
+ ],
+ "shots": [
+  {
+   "png": "01-inicio.png",
+   "url": "/",
+   "status": 200,
+   "what": "Inicio rediseñado: indicadores, una tarjeta por ejecución con low_prop por ventana y últimas alertas"
+  },
+  {
+   "png": "02-filtros-avanzados.png",
+   "url": "/eventos?run_id=c2-baja-confianza-20261112T162525Z&zone=low&captured=true&in_alert=true&dets_min=2&dets_max=6&sort=score_desc",
+   "status": 200,
+   "what": "Consulta combinada con el panel avanzado abierto, etiquetas de filtros activos y orden por puntuación"
+  },
+  {
+   "png": "03-error-rango.png",
+   "url": "/eventos?score_min=0.9&score_max=0.1",
+   "status": 422,
+   "what": "Rango invertido: HTTP 422 con explicación, sin resultados"
+  },
+  {
+   "png": "04-vacio.png",
+   "url": "/eventos?run_id=c2-baja-confianza-20261112T162525Z&status=error",
+   "status": 200,
+   "what": "Consulta válida sin resultados: estado vacío"
+  },
+  {
+   "png": "05-ventana-s3.png",
+   "url": "/eventos?run_id=s3-error-inferencia-20261112T205403Z&window=3",
+   "status": 200,
+   "what": "Ventana 3 de S3: todos los eventos con error de inferencia"
+  },
+  {
+   "png": "06-alertas.png",
+   "url": "/alertas?severity=high",
+   "status": 200,
+   "what": "Alertas filtradas por severidad alta"
+  }
+ ]
+}

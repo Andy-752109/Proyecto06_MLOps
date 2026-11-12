@@ -2,10 +2,10 @@
  "checks": [
   {
    "filters": "(sin filtros)",
-   "expected": 1190,
-   "csv": 1190,
-   "jsonl": 1190,
-   "header_count": 1190,
+   "expected": 1388,
+   "csv": 1388,
+   "jsonl": 1388,
+   "header_count": 1388,
    "ids_ok": true,
    "fields_ok": true,
    "ok": true
@@ -77,10 +77,10 @@
     "zone": "accepted",
     "captured": true
    },
-   "expected": 74,
-   "csv": 74,
-   "jsonl": 74,
-   "header_count": 74,
+   "expected": 89,
+   "csv": 89,
+   "jsonl": 89,
+   "header_count": 89,
    "ids_ok": true,
    "fields_ok": true,
    "ok": true

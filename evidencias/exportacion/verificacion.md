@@ -9,13 +9,13 @@ Lo esperado se calcula filtrando `evidencias/runs/*/events.jsonl`, sin consultar
 
 | Filtros | Esperados (JSONL) | CSV | JSONL | `X-Export-Count` | Mismos ids y orden | Mismos campos | Resultado |
 |---|---|---|---|---|---|---|---|
-| `(sin filtros)` | 1190 | 1190 | 1190 | 1190 | sí | sí | ok |
+| `(sin filtros)` | 1388 | 1388 | 1388 | 1388 | sí | sí | ok |
 | `{'run_id': 'c2-baja-confianza-20261112T162525Z'}` | 198 | 198 | 198 | 198 | sí | sí | ok |
 | `{'run_id': 's1-interrupcion-20261112T175603Z'}` | 198 | 198 | 198 | 198 | sí | sí | ok |
 | `{'run_id': 'c2-baja-confianza-20261112T162525Z', 'zone': 'low', 'captured': True}` | 13 | 13 | 13 | 13 | sí | sí | ok |
 | `{'status': 'no_detections'}` | 3 | 3 | 3 | 3 | sí | sí | ok |
 | `{'status': 'source_gap'}` | 160 | 160 | 160 | 160 | sí | sí | ok |
-| `{'zone': 'accepted', 'captured': True}` | 74 | 74 | 74 | 74 | sí | sí | ok |
+| `{'zone': 'accepted', 'captured': True}` | 89 | 89 | 89 | 89 | sí | sí | ok |
 | `{'run_id': 's1-interrupcion-20261112T175603Z', 'status': 'source_gap'}` | 80 | 80 | 80 | 80 | sí | sí | ok |
 
 ## Estados vacío y de error

@@ -1,0 +1,68 @@
+{
+  "config_ref": "cfg-517d02606b3e",
+  "model": {
+    "name": "yolov8n",
+    "path": "modelo/yolov8n.pt",
+    "sha256": "f59b3d833e2ff32e194b5bb8e08d211dc7c5bdf144b90d2c8412c47ccfc83b36",
+    "version": "yolov8n · ultralytics/assets release v8.3.0 (pesos COCO preentrenados)",
+    "task": "detection",
+    "classes": {
+      "0": "person"
+    },
+    "imgsz": 640,
+    "conf_floor": 0.1,
+    "nms_iou": 0.45,
+    "max_det": 100,
+    "device": "cpu"
+  },
+  "policy": {
+    "unit": "detection",
+    "lower": 0.4,
+    "upper": 0.7,
+    "justification": "evidencias/referencia/justificacion-umbrales.md"
+  },
+  "windows": {
+    "size_frames": 20,
+    "min_frames": 15,
+    "min_detections": 30
+  },
+  "reference": {
+    "path": "config/reference.json"
+  },
+  "alerts": [
+    {
+      "rule_id": "baja-confianza-v1",
+      "severity": "warning",
+      "metric": "low_prop",
+      "condition": ">= 0.40",
+      "threshold": 0.4,
+      "persistence_windows": 1,
+      "suggested_action": "Revisar las capturas vinculadas: enfoque, iluminación, oclusión y limpieza de la lente. Verificar que modelo y preprocesamiento no cambiaron."
+    },
+    {
+      "rule_id": "cambio-sostenido-v1",
+      "severity": "high",
+      "metric": "low_prop_delta",
+      "condition": ">= 0.15 durante 3 ventanas elegibles consecutivas",
+      "threshold": 0.15,
+      "persistence_windows": 3,
+      "suggested_action": "Posible cambio de condiciones respecto a la referencia. Comparar capturas con la referencia y revisar la escena y la cámara; la confianza no confirma pérdida de calidad."
+    },
+    {
+      "rule_id": "evidencia-insuficiente-v1",
+      "severity": "info",
+      "metric": "window_state",
+      "condition": "ventana insuficiente durante 3 ventanas consecutivas",
+      "threshold": null,
+      "persistence_windows": 3,
+      "suggested_action": "No hay observaciones suficientes para evaluar confianza. Revisar la fuente, la escena y si el detector entrega candidatas; no interpretar como operación normal."
+    }
+  ],
+  "capture": {
+    "jpeg_quality": 85,
+    "normal_sample_every": 10,
+    "flagged_min_gap": 3,
+    "on_alert": true,
+    "expiration": "none"
+  }
+}

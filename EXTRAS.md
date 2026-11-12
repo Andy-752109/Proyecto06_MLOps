@@ -3,7 +3,11 @@
 La base (C1, C2, una métrica base por grupo, vistas mínimas de eventos y alertas) no se
 presenta como adicional. Tampoco las funciones que ya formaban parte de ella: filtros simples
 de eventos y alertas, vistas de detalle de ventana y ejecución, `p50` y `cpu_percent`
-informativos, y la regla `evidencia-insuficiente-v1`.
+informativos, y la regla `evidencia-insuficiente-v1`. El rediseño visual del portal tampoco se
+reclama por sí mismo; solo F5 (filtros avanzados), que es una funcionalidad nueva.
+
+Total solicitado: F1 15 + F2 10 + F3 15 + F4 15 + F5 10 + S1 10 + S2 8 + S3 10 + M1 5 + M2 8 +
+M3 8 = **114 puntos**, sujetos al nivel que el evaluador considere demostrado.
 
 | ID | Tipo | Descripción | Nivel solicitado | Evidencia |
 |---|---|---|---|---|
@@ -13,6 +17,8 @@ informativos, y la regla `evidencia-insuficiente-v1`.
 | F2 | F (funcionalidad) | Exportación de eventos a CSV/JSONL con los filtros de `/eventos` | 10 | [`evidencias/exportacion/verificacion.md`](evidencias/exportacion/verificacion.md) |
 | F3 | F (funcionalidad) | Revisión manual de capturas: galería, etiquetas con historial, resumen por alerta | 15 | [`evidencias/revisiones/recorrido.md`](evidencias/revisiones/recorrido.md) |
 | F4 | F (funcionalidad) | Vista en vivo del stream con cajas, ventana en curso, alertas abiertas y salud de la fuente | 15 | [`evidencias/en_vivo/recorrido.md`](evidencias/en_vivo/recorrido.md) |
+| S3 | S (escenario) | Error de inferencia: la llamada al modelo falla 50 frames; diagnóstico por eventos `error` y ventanas insuficientes, reacción con recarga del modelo y verificación de SHA-256, recuperación y verificación posterior contra C1 | 10 | [`evidencias/escenarios/s3-error-inferencia.md`](evidencias/escenarios/s3-error-inferencia.md) |
+| F5 | F (funcionalidad) | Filtros avanzados de eventos: rangos de puntuación y detecciones, intervalo de captura, ventana, motivo, vínculo con alertas, texto en el id y orden, compartidos por página, API y exportación | 10 | [`evidencias/filtros/verificacion.md`](evidencias/filtros/verificacion.md) |
 | M1 | M (métrica) | `m1_e2e_ms_p95`: p95 de la latencia de extremo a extremo por ventana (cola + inferencia + resto) | 5 | [`evidencias/metricas_adicionales/resumen.md`](evidencias/metricas_adicionales/resumen.md) |
 | M2 | M (métrica) | `m2_delivery_ratio`: frames entregados / esperados según `frame_index`, cruzada con watchdog y fuente | 8 | ídem |
 | M3 | M (métrica) | `m3_score_psi`: PSI de la distribución de puntuaciones de la ventana contra la referencia | 8 | ídem |
@@ -360,3 +366,71 @@ casos normal y de fallo reproducibles.
 - La ejecución `s1-interrupcion-20261112T185945Z` solo es la evidencia de F4. El escenario
   S1 se acredita con `s1-interrupcion-20261112T175603Z` y no se reclama otra vez.
 - F2, F3 y F4 son flujos distintos entre sí y distintos de las vistas base y del tablero F1.
+
+## S3 · Error de inferencia con reacción y recuperación (`s3-error-inferencia`)
+
+**Entrada.** El mismo tramo que C1 (`vtest.avi`, frames 400–794, 10 fps, muestreo 1/2). La
+fuente entrega todos los frames; lo que falla es la llamada al modelo para los frames 500–599
+(`source.fault_injection.inference_error`), que lanza `InjectedInferenceError`. Es una condición
+distinta de S1: en S1 no llegan frames (eventos `source_gap`, sin imagen); aquí el frame existe,
+se captura y se conserva, pero no hay puntuación.
+
+**Etapas y evidencia** (`s3-error-inferencia-20261112T205403Z`, commit `84b576a`,
+`git_dirty=false`):
+
+1. **Antes:** ventanas 0–1 elegibles, sin alertas.
+2. **Fallo:** los 50 eventos con índice en [500, 600) quedan con estado `error`, frame, modelo
+   y detalle, sin detecciones, `inference_ms` ni `max_score`. No hay huecos ni descartes.
+3. **Diagnóstico:** `inference_failed` en la línea de tiempo del detector; 17 capturas con
+   motivo `error`; ventanas 2–4 insuficientes; G1 y G4 sin datos (null, no 0) donde todo es
+   error; G5 y G6 siguen en 1.0 (los errores son trazables y la versión no cambió); se abre
+   `evidencia-insuficiente-v1` en la ventana 4.
+4. **Reacción** (`config/monitor.yaml → recovery.reload_after_errors: 20`): el monitor recarga
+   el modelo tras 20 y 40 errores consecutivos y comprueba su SHA-256 (`detector_reloaded`,
+   `sha256_match=true`). Así descarta un artefacto cambiado o dañado.
+5. **Recuperación:** `inference_recovered` en el frame 600, tras 50 errores y 2 recargas; la
+   alerta se resuelve en la ventana 5.
+6. **Verificación posterior:** ventanas 5–9 elegibles con `low_prop` < 0.40; cada uno de los
+   148 frames inferidos tiene las mismas puntuaciones que en C1, antes y después de las
+   recargas; mismo `config_ref` y modelo que C1.
+
+Verificación: [`evidencias/escenarios/s3-error-inferencia.md`](evidencias/escenarios/s3-error-inferencia.md)
+(21 expectativas, 0 fallas), recálculo independiente
+[`evidencias/recalculo/s3-error-inferencia-20261112T205403Z.md`](evidencias/recalculo/s3-error-inferencia-20261112T205403Z.md)
+(114 comprobaciones, 0 diferencias), pruebas `tests/test_inference_fault.py` y capturas
+`evidencias/escenarios/s3-*.png`.
+
+**Sin doble conteo.** La regla `evidencia-insuficiente-v1` es base y no se reclama; lo que se
+acredita es la secuencia fallo → diagnóstico → reacción → recuperación → verificación con una
+condición de aceptación distinta de S1 (frames presentes, inferencia ausente, recarga del
+modelo).
+
+## F5 · Filtros avanzados de eventos (`/eventos`, `/api/eventos`, `/exportar/eventos.*`)
+
+**Qué hace.** Además de los filtros básicos de la base (ejecución, estado, zona, con captura),
+`/eventos` ofrece un panel de filtros avanzados que se combinan entre sí:
+
+- rango de **máxima puntuación** del frame (`score_min`, `score_max`, en [0, 1]); excluye los
+  eventos sin puntuación, que no equivalen a confianza 0;
+- rango de **número de detecciones** (`dets_min`, `dets_max`);
+- **intervalo de captura** en UTC (`since`, `until`, ISO 8601);
+- **ventana** por índice (`window`), **motivo de captura** (`reason`) y **texto en el id** (`q`);
+- **solo eventos que sustentan alguna alerta** (`in_alert`), resuelto contra `alerts.event_ids`;
+- **orden**: por ejecución y secuencia, puntuación ↑/↓, detecciones, tiempo de inferencia,
+  extremo a extremo o más recientes; los nulos siempre van al final.
+
+La consulta vive en la URL (se comparte y se recarga igual), se muestra como etiquetas que se
+quitan una a una, y es la misma para la página, `/api/eventos` y la exportación F2. Un filtro
+inválido (rango invertido, número fuera de rango o no numérico, fecha inválida, orden
+desconocido) responde **422** con la causa en la página, la API y la exportación; una consulta
+válida sin resultados muestra el estado vacío.
+
+**Evidencia.** [`evidencias/filtros/verificacion.md`](evidencias/filtros/verificacion.md):
+14 consultas cuyo resultado y orden se recalculan en Python desde `events.jsonl` y
+`alerts.jsonl` (sin SQLite) y coinciden con la API (todas las páginas), el CSV y el conteo de
+la página; que agregar filtros solo reduce el resultado; que cada etiqueta quita solo su
+filtro; 7 casos de error y 2 vacíos. **25 comprobaciones, 0 fallas.** Pruebas en
+`tests/test_filters.py` y capturas `evidencias/filtros/*.png`.
+
+**Sin doble conteo.** Los filtros básicos son base y la descarga es F2; F5 acredita solo los
+filtros y el orden nuevos. El rediseño visual del portal no se reclama.

@@ -12,10 +12,14 @@
 | `07e0e17` | Adicional S1 (cambia código) | `s1-interrupcion-20261112T175603Z` |
 | `257712f` | Adicional S2 (cambia código) | `s2-cambio-sostenido-20261112T181053Z` |
 | `e244ed1` | Adicionales F2–F4 (cambia código) | `s1-interrupcion-20261112T185945Z` (evidencia de la vista en vivo) |
+| `84b576a` | Adicional S3 (`619618b`), portal rediseñado y adicional F5 (cambian código) | `s3-error-inferencia-20261112T205403Z` |
 
 Las demás revisiones posteriores (F1, M1–M3 y correcciones menores) agregan código o
 evidencia, pero no generan ejecuciones nuevas; el detalle de cada adicional está en
-[`EXTRAS.md`](../EXTRAS.md).
+[`EXTRAS.md`](../EXTRAS.md). Tras rediseñar el portal (`84b576a`) se volvieron a ejecutar las
+verificaciones con capturas de pantalla (recorrido base, F1, F2, F3, S1, S2), así que sus
+imágenes muestran la interfaz actual con los mismos resultados (0 fallas). Las capturas de la
+vista en vivo (F4) son anteriores al rediseño: regenerarlas exige una ejecución nueva.
 
 Cada `manifest.json` registra `git_commit` y `git_dirty`. Todas las ejecuciones versionadas
 tienen `git_dirty = false`, porque se hicieron con `src/ config/ scripts/ modelo/` sin cambios
@@ -152,7 +156,7 @@ en la cola durante el arranque del modelo se procesan seguidos. Todas las métri
 | R7.1 Reproducción | README (Instalación y Ejecución); `requirements.txt`; `pyproject.toml` |
 | R7.2 Evidencias | Este índice; `recalculo/`; `portal/recorrido.md` |
 | R7.3 Autoría | README (Autoría y componentes reutilizados) |
-| Extras | [`EXTRAS.md`](../EXTRAS.md): F1–F4, S1, S2 y M1–M3, cada uno con su verificación |
+| Extras | [`EXTRAS.md`](../EXTRAS.md): F1–F5, S1–S3 y M1–M3, cada uno con su verificación |
 
 ## Cómo reproducir y verificar
 
@@ -164,7 +168,7 @@ git clone https://github.com/Andy-752109/Proyecto06_MLOps.git p6 && cd p6
 python3.12 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt && pip install -e .
 python scripts/prepare_inputs.py                     # verifica SHA-256 de entradas y modelo
-python -m pytest -q                                  # 48 pruebas
+python -m pytest -q                                  # 59 pruebas
 python scripts/recalc_metrics.py --run-id reference-20261112T162358Z \
   --run-id c1-normal-20261112T162444Z --run-id c2-baja-confianza-20261112T162525Z   # 0 diferencias
 python -m monitor.pipeline --scenario c1-normal       # nueva ejecución C1 (≈40 s)

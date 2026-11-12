@@ -1,0 +1,276 @@
+{
+ "run_id": "s3-error-inferencia-20261112T205403Z",
+ "c1": "c1-normal-20261112T162444Z",
+ "n_checks": 21,
+ "n_failed": 0,
+ "timeline": [
+  {
+   "run_id": "s3-error-inferencia-20261112T205403Z",
+   "seq": 0,
+   "ts": "2026-11-12T20:54:14.137Z",
+   "kind": "inference_failed",
+   "detail": {
+    "frame_index": 500,
+    "event_id": "s3-error-inferencia-20261112T205403Z-e00050",
+    "error": "InjectedInferenceError: fallo inyectado en la llamada al modelo (frames 500-599)"
+   }
+  },
+  {
+   "run_id": "s3-error-inferencia-20261112T205403Z",
+   "seq": 1,
+   "ts": "2026-11-12T20:54:17.969Z",
+   "kind": "detector_reloaded",
+   "detail": {
+    "frame_index": 538,
+    "after_errors": 20,
+    "load_ms": 32.6,
+    "sha256": "f59b3d833e2f",
+    "sha256_match": true
+   }
+  },
+  {
+   "run_id": "s3-error-inferencia-20261112T205403Z",
+   "seq": 2,
+   "ts": "2026-11-12T20:54:21.971Z",
+   "kind": "detector_reloaded",
+   "detail": {
+    "frame_index": 578,
+    "after_errors": 40,
+    "load_ms": 33.8,
+    "sha256": "f59b3d833e2f",
+    "sha256_match": true
+   }
+  },
+  {
+   "run_id": "s3-error-inferencia-20261112T205403Z",
+   "seq": 3,
+   "ts": "2026-11-12T20:54:24.187Z",
+   "kind": "inference_recovered",
+   "detail": {
+    "frame_index": 600,
+    "event_id": "s3-error-inferencia-20261112T205403Z-e00100",
+    "consecutive_errors": 50,
+    "reloads": 2,
+    "failing_s": 10.051
+   }
+  }
+ ],
+ "checks": [
+  {
+   "stage": "1 antes",
+   "what": "ventanas cerradas antes del primer error son elegibles",
+   "expected": "todas eligible",
+   "observed": [
+    "eligible",
+    "eligible"
+   ],
+   "ok": true
+  },
+  {
+   "stage": "1 antes",
+   "what": "sin alertas abiertas antes del primer error",
+   "expected": 0,
+   "observed": 0,
+   "ok": true
+  },
+  {
+   "stage": "2 fallo",
+   "what": "los eventos con error son exactamente los frames del tramo declarado",
+   "expected": "índice en [500, 600) (50 eventos)",
+   "observed": "50 errores, frames 500–598",
+   "ok": true
+  },
+  {
+   "stage": "2 fallo",
+   "what": "la fuente no pierde frames: sin huecos ni descartes por saturación",
+   "expected": "0 source_gap, 0 saturation, índices consecutivos de 2 en 2",
+   "observed": [
+    0,
+    0
+   ],
+   "ok": true
+  },
+  {
+   "stage": "2 fallo",
+   "what": "cada error conserva el frame, el modelo y el detalle, sin puntuaciones",
+   "expected": "frame_id y model_sha256 presentes; error con texto; sin detecciones, inference_ms ni max_score",
+   "observed": 50,
+   "ok": true
+  },
+  {
+   "stage": "3 diagnóstico",
+   "what": "el primer error queda registrado en la línea de tiempo del detector",
+   "expected": "inference_failed en el frame 500",
+   "observed": [
+    "inference_failed",
+    500
+   ],
+   "ok": true
+  },
+  {
+   "stage": "3 diagnóstico",
+   "what": "se capturan frames con error (máx. 1 cada 3) y las imágenes existen",
+   "expected": "≈ 16 capturas 'error', separación ≥ 3",
+   "observed": "17 capturas, separación mínima 3",
+   "ok": true
+  },
+  {
+   "stage": "3 diagnóstico",
+   "what": "ventanas con menos de 15 frames válidos quedan insuficientes",
+   "expected": "insufficient donde n_valid < mínimo",
+   "observed": {
+    "w002": "10 válidos, insufficient",
+    "w003": "0 válidos, insufficient",
+    "w004": "0 válidos, insufficient"
+   },
+   "ok": true
+  },
+  {
+   "stage": "3 diagnóstico",
+   "what": "evidencia-insuficiente-v1 se abre al cumplir 3 ventanas insuficientes",
+   "expected": "1 alerta, abierta en w004",
+   "observed": [
+    [
+     "a01",
+     "w004"
+    ]
+   ],
+   "ok": true
+  },
+  {
+   "stage": "3 diagnóstico",
+   "what": "reglas de confianza no se evalúan con evidencia insuficiente",
+   "expected": "insufficient_evidence",
+   "observed": [
+    "insufficient_evidence"
+   ],
+   "ok": true
+  },
+  {
+   "stage": "3 diagnóstico",
+   "what": "ventanas solo con errores: G1 y G4 sin datos (null, no 0)",
+   "expected": "no_data",
+   "observed": [
+    "no_data"
+   ],
+   "ok": true
+  },
+  {
+   "stage": "3 diagnóstico",
+   "what": "los errores siguen siendo trazables (G5) y la versión no cambió (G6)",
+   "expected": "G5 = 1.0 y G6 = 1.0 en las ventanas con errores",
+   "observed": {
+    "w002": [
+     1.0,
+     1.0
+    ],
+    "w003": [
+     1.0,
+     1.0
+    ],
+    "w004": [
+     1.0,
+     1.0
+    ]
+   },
+   "ok": true
+  },
+  {
+   "stage": "4 reacción",
+   "what": "el modelo se recarga cada 20 errores consecutivos",
+   "expected": "2 recargas, tras [20, 40] errores",
+   "observed": "2 recargas, tras [20, 40] errores",
+   "ok": true
+  },
+  {
+   "stage": "4 reacción",
+   "what": "cada recarga verifica el SHA-256: el artefacto es el configurado (no es cambio de versión)",
+   "expected": "sha256_match = true, f59b3d833e2f",
+   "observed": [
+    [
+     "f59b3d833e2f",
+     true
+    ],
+    [
+     "f59b3d833e2f",
+     true
+    ]
+   ],
+   "ok": true
+  },
+  {
+   "stage": "5 recuperación",
+   "what": "la inferencia vuelve a responder en el primer frame tras el tramo",
+   "expected": "inference_recovered en el frame 600 tras 50 errores",
+   "observed": [
+    600,
+    50,
+    2
+   ],
+   "ok": true
+  },
+  {
+   "stage": "5 recuperación",
+   "what": "la alerta se resuelve en la primera ventana elegible tras recuperarse",
+   "expected": "w005",
+   "observed": [
+    "resolved",
+    "w005"
+   ],
+   "ok": true
+  },
+  {
+   "stage": "6 posterior",
+   "what": "todas las ventanas desde la recuperación son elegibles",
+   "expected": "todas eligible",
+   "observed": [
+    "eligible",
+    "eligible",
+    "eligible",
+    "eligible",
+    "eligible"
+   ],
+   "ok": true
+  },
+  {
+   "stage": "6 posterior",
+   "what": "ninguna alerta abierta al terminar",
+   "expected": 0,
+   "observed": 0,
+   "ok": true
+  },
+  {
+   "stage": "6 posterior",
+   "what": "low_prop tras la recuperación por debajo de 0.40 (como C1)",
+   "expected": "< 0.4",
+   "observed": [
+    0.088,
+    0.058,
+    0.11,
+    0.089,
+    0.104
+   ],
+   "ok": true
+  },
+  {
+   "stage": "6 posterior",
+   "what": "cada frame inferido (antes y después de las recargas) tiene las mismas puntuaciones que en C1",
+   "expected": "148 de 148 (98 después de recuperarse)",
+   "observed": 148,
+   "ok": true
+  },
+  {
+   "stage": "6 posterior",
+   "what": "misma configuración y modelo que C1",
+   "expected": [
+    "cfg-517d02606b3e",
+    "yolov8n@sha256:f59b3d833e2f"
+   ],
+   "observed": [
+    "cfg-517d02606b3e",
+    "yolov8n@sha256:f59b3d833e2f"
+   ],
+   "ok": true
+  }
+ ]
+}
