@@ -1,0 +1,271 @@
+{
+ "run_id": "s1-interrupcion-20261112T175603Z",
+ "c1": "c1-normal-20261112T162444Z",
+ "n_checks": 19,
+ "n_failed": 0,
+ "source_events": [
+  {
+   "run_id": "s1-interrupcion-20261112T175603Z",
+   "seq": 0,
+   "ts": "2026-11-12T17:56:13.796Z",
+   "kind": "connection_lost",
+   "detail": {
+    "frame_index": 500,
+    "simulated": true
+   }
+  },
+  {
+   "run_id": "s1-interrupcion-20261112T175603Z",
+   "seq": 1,
+   "ts": "2026-11-12T17:56:15.802Z",
+   "kind": "reconnect_failed",
+   "detail": {
+    "attempt": 1,
+    "simulated": true
+   }
+  },
+  {
+   "run_id": "s1-interrupcion-20261112T175603Z",
+   "seq": 2,
+   "ts": "2026-11-12T17:56:17.803Z",
+   "kind": "reconnect_failed",
+   "detail": {
+    "attempt": 2,
+    "simulated": true
+   }
+  },
+  {
+   "run_id": "s1-interrupcion-20261112T175603Z",
+   "seq": 3,
+   "ts": "2026-11-12T17:56:19.803Z",
+   "kind": "reconnect_failed",
+   "detail": {
+    "attempt": 3,
+    "simulated": true
+   }
+  },
+  {
+   "run_id": "s1-interrupcion-20261112T175603Z",
+   "seq": 4,
+   "ts": "2026-11-12T17:56:21.808Z",
+   "kind": "reconnect_failed",
+   "detail": {
+    "attempt": 4,
+    "simulated": true
+   }
+  },
+  {
+   "run_id": "s1-interrupcion-20261112T175603Z",
+   "seq": 5,
+   "ts": "2026-11-12T17:56:23.811Z",
+   "kind": "reconnect_failed",
+   "detail": {
+    "attempt": 5,
+    "simulated": true
+   }
+  },
+  {
+   "run_id": "s1-interrupcion-20261112T175603Z",
+   "seq": 6,
+   "ts": "2026-11-12T17:56:25.816Z",
+   "kind": "reconnect_failed",
+   "detail": {
+    "attempt": 6,
+    "simulated": true
+   }
+  },
+  {
+   "run_id": "s1-interrupcion-20261112T175603Z",
+   "seq": 7,
+   "ts": "2026-11-12T17:56:27.821Z",
+   "kind": "reconnect_failed",
+   "detail": {
+    "attempt": 7,
+    "simulated": true
+   }
+  },
+  {
+   "run_id": "s1-interrupcion-20261112T175603Z",
+   "seq": 8,
+   "ts": "2026-11-12T17:56:29.886Z",
+   "kind": "reconnected",
+   "detail": {
+    "attempt": 8,
+    "frame_index": 659,
+    "frames_lost": 159,
+    "outage_s": 16.091
+   }
+  }
+ ],
+ "checks": [
+  {
+   "stage": "1 antes",
+   "what": "ventanas cerradas antes del corte son elegibles",
+   "expected": "todas eligible",
+   "observed": [
+    "eligible",
+    "eligible"
+   ],
+   "ok": true
+  },
+  {
+   "stage": "1 antes",
+   "what": "sin alertas abiertas antes del corte",
+   "expected": 0,
+   "observed": 0,
+   "ok": true
+  },
+  {
+   "stage": "2 fallo",
+   "what": "la conexión se pierde en el frame declarado",
+   "expected": 500,
+   "observed": 500,
+   "ok": true
+  },
+  {
+   "stage": "2 fallo",
+   "what": "ningún frame inferido con índice entre el corte y la reconexión",
+   "expected": "ninguno en [500, 659)",
+   "observed": [],
+   "ok": true
+  },
+  {
+   "stage": "3 diagnóstico",
+   "what": "primer hueco detectado tras el periodo de gracia del watchdog",
+   "expected": "1.0 s ≤ retraso ≤ 1.4 s desde el último frame",
+   "observed": 1.067,
+   "ok": true
+  },
+  {
+   "stage": "3 diagnóstico",
+   "what": "un hueco por frame esperado durante el silencio",
+   "expected": "≈ 80 (± 3)",
+   "observed": 80,
+   "ok": true
+  },
+  {
+   "stage": "3 diagnóstico",
+   "what": "huecos sin frame, sin inferencia, sin imagen y con detalle",
+   "expected": "frame_id/inference_ms/image_ref nulos, error con texto",
+   "observed": 80,
+   "ok": true
+  },
+  {
+   "stage": "3 diagnóstico",
+   "what": "ventanas con huecos quedan insuficientes (no normales)",
+   "expected": "todas insufficient",
+   "observed": {
+    "s1-interrupcion-20261112T175603Z-w002": "insufficient",
+    "s1-interrupcion-20261112T175603Z-w003": "insufficient",
+    "s1-interrupcion-20261112T175603Z-w004": "insufficient",
+    "s1-interrupcion-20261112T175603Z-w005": "insufficient",
+    "s1-interrupcion-20261112T175603Z-w006": "insufficient"
+   },
+   "ok": true
+  },
+  {
+   "stage": "3 diagnóstico",
+   "what": "evidencia-insuficiente-v1 se abre al cumplir 3 ventanas insuficientes",
+   "expected": "1 alerta, abierta en s1-interrupcion-20261112T175603Z-w004",
+   "observed": [
+    [
+     "s1-interrupcion-20261112T175603Z-a01",
+     "s1-interrupcion-20261112T175603Z-w004"
+    ]
+   ],
+   "ok": true
+  },
+  {
+   "stage": "3 diagnóstico",
+   "what": "reglas de confianza no se evalúan con evidencia insuficiente",
+   "expected": "insufficient_evidence",
+   "observed": [
+    "insufficient_evidence"
+   ],
+   "ok": true
+  },
+  {
+   "stage": "4 reacción",
+   "what": "reintentos cada 2 s hasta superar 15 s",
+   "expected": "7 reintentos fallidos + 1 exitoso",
+   "observed": "7 fallidos, intervalo 2.00–2.06 s",
+   "ok": true
+  },
+  {
+   "stage": "4 reacción",
+   "what": "frames perdidos = posición en vivo − frame del corte = descarte 'outage'",
+   "expected": 159,
+   "observed": [
+    159,
+    159
+   ],
+   "ok": true
+  },
+  {
+   "stage": "5 recuperación",
+   "what": "la alerta se resuelve en la primera ventana elegible tras reconectar",
+   "expected": "s1-interrupcion-20261112T175603Z-w007",
+   "observed": [
+    "resolved",
+    "s1-interrupcion-20261112T175603Z-w007"
+   ],
+   "ok": true
+  },
+  {
+   "stage": "5 recuperación",
+   "what": "resolución posterior a la reconexión",
+   "expected": "> 2026-11-12T17:56:29.886Z",
+   "observed": "2026-11-12T17:56:35.742Z",
+   "ok": true
+  },
+  {
+   "stage": "6 posterior",
+   "what": "todas las ventanas desde la recuperación son elegibles",
+   "expected": "todas eligible",
+   "observed": [
+    "eligible",
+    "eligible",
+    "eligible"
+   ],
+   "ok": true
+  },
+  {
+   "stage": "6 posterior",
+   "what": "ninguna alerta abierta al terminar",
+   "expected": 0,
+   "observed": 0,
+   "ok": true
+  },
+  {
+   "stage": "6 posterior",
+   "what": "low_prop tras la recuperación por debajo de 0.40 (como C1)",
+   "expected": "< 0.4",
+   "observed": [
+    0.11,
+    0.089,
+    0.104
+   ],
+   "ok": true
+  },
+  {
+   "stage": "6 posterior",
+   "what": "cada frame inferido tiene las mismas puntuaciones que en C1",
+   "expected": "118 de 118",
+   "observed": 118,
+   "ok": true
+  },
+  {
+   "stage": "6 posterior",
+   "what": "misma configuración y modelo que C1",
+   "expected": [
+    "cfg-517d02606b3e",
+    "yolov8n@sha256:f59b3d833e2f"
+   ],
+   "observed": [
+    "cfg-517d02606b3e",
+    "yolov8n@sha256:f59b3d833e2f"
+   ],
+   "ok": true
+  }
+ ]
+}

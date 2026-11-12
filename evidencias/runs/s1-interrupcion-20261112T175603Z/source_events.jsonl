@@ -1,0 +1,9 @@
+{"run_id": "s1-interrupcion-20261112T175603Z", "seq": 0, "ts": "2026-11-12T17:56:13.796Z", "kind": "connection_lost", "detail": {"frame_index": 500, "simulated": true}}
+{"run_id": "s1-interrupcion-20261112T175603Z", "seq": 1, "ts": "2026-11-12T17:56:15.802Z", "kind": "reconnect_failed", "detail": {"attempt": 1, "simulated": true}}
+{"run_id": "s1-interrupcion-20261112T175603Z", "seq": 2, "ts": "2026-11-12T17:56:17.803Z", "kind": "reconnect_failed", "detail": {"attempt": 2, "simulated": true}}
+{"run_id": "s1-interrupcion-20261112T175603Z", "seq": 3, "ts": "2026-11-12T17:56:19.803Z", "kind": "reconnect_failed", "detail": {"attempt": 3, "simulated": true}}
+{"run_id": "s1-interrupcion-20261112T175603Z", "seq": 4, "ts": "2026-11-12T17:56:21.808Z", "kind": "reconnect_failed", "detail": {"attempt": 4, "simulated": true}}
+{"run_id": "s1-interrupcion-20261112T175603Z", "seq": 5, "ts": "2026-11-12T17:56:23.811Z", "kind": "reconnect_failed", "detail": {"attempt": 5, "simulated": true}}
+{"run_id": "s1-interrupcion-20261112T175603Z", "seq": 6, "ts": "2026-11-12T17:56:25.816Z", "kind": "reconnect_failed", "detail": {"attempt": 6, "simulated": true}}
+{"run_id": "s1-interrupcion-20261112T175603Z", "seq": 7, "ts": "2026-11-12T17:56:27.821Z", "kind": "reconnect_failed", "detail": {"attempt": 7, "simulated": true}}
+{"run_id": "s1-interrupcion-20261112T175603Z", "seq": 8, "ts": "2026-11-12T17:56:29.886Z", "kind": "reconnected", "detail": {"attempt": 8, "frame_index": 659, "frames_lost": 159, "outage_s": 16.091}}
