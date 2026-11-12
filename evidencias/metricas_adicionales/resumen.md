@@ -1,9 +1,9 @@
 # Métricas adicionales M1–M3
 
-Generado con `python scripts/extra_metrics.py --run-id reference-20261112T162358Z --run-id c1-normal-20261112T162444Z --run-id c2-baja-confianza-20261112T162525Z --run-id s1-interrupcion-20261112T175603Z --run-id s2-cambio-sostenido-20261112T181053Z`.
+Generado con `python scripts/extra_metrics.py --run-id reference-20261112T162358Z --run-id c1-normal-20261112T162444Z --run-id c2-baja-confianza-20261112T162525Z --run-id s1-interrupcion-20261112T175603Z --run-id s2-cambio-sostenido-20261112T181053Z --run-id s3-error-inferencia-20261112T205403Z`.
 Definiciones: [`docs/metricas-adicionales.md`](../../docs/metricas-adicionales.md). Recálculo independiente: [`recalculo.md`](recalculo.md).
 
-**Expectativas: 13 · fallas: 0**
+**Expectativas: 17 · fallas: 0**
 
 | Métrica | Expectativa | Esperado | Observado | Resultado |
 |---|---|---|---|---|
@@ -18,6 +18,10 @@ Definiciones: [`docs/metricas-adicionales.md`](../../docs/metricas-adicionales.m
 | m2_delivery_ratio | s1-interrupcion-20261112T175603Z: pérdida por saltos = frames del corte / muestreo (± 1) | 79.5 | 80.0 | ok |
 | m1_e2e_ms_p95 | s2-cambio-sostenido-20261112T181053Z: e2e ≥ cola + inferencia en cada evento válido | 0 | 0 | ok |
 | m2_delivery_ratio | s2-cambio-sostenido-20261112T181053Z: sin corte ni saturación → entrega 1.0 en todas las ventanas | todas 1.0 | [1.0] | ok |
+| m1_e2e_ms_p95 | s3-error-inferencia-20261112T205403Z: e2e ≥ cola + inferencia en cada evento válido | 0 | 0 | ok |
+| m2_delivery_ratio | s3-error-inferencia-20261112T205403Z: sin corte ni saturación → entrega 1.0 en todas las ventanas | todas 1.0 | [1.0] | ok |
+| m2_delivery_ratio | s3-error-inferencia-20261112T205403Z: con 50 errores de inferencia la entrega sigue en 1.0 | 1.0 también en las ventanas con errores | [1.0] | ok |
+| m1_e2e_ms_p95 | s3-error-inferencia-20261112T205403Z: ventanas solo con errores → M1 sin datos (no 0) | no_data | ['no_data'] | ok |
 | m3_score_psi | s2-cambio-sostenido-20261112T181053Z: PSI mínimo de ventanas desenfocadas > PSI máximo de ventanas normales | > 0.549 | 4.062 | ok |
 | m3_score_psi | variación propia de la referencia (sus ventanas contra su histograma agregado) | documentada | 0.073–0.254 | ok |
 
@@ -95,3 +99,18 @@ Definiciones: [`docs/metricas-adicionales.md`](../../docs/metricas-adicionales.m
 | w007 | 43.8 | 0.1 | 41.8 | 1.000 | 0 | 7.344 | 124 |
 | w008 | 43.8 | 0.1 | 41.9 | 1.000 | 0 | 0.254 | 158 |
 | w009 | 44.3 | 0.1 | 41.9 | 1.000 | 0 | 0.105 | 134 |
+
+## `s3-error-inferencia-20261112T205403Z`
+
+| Ventana | M1 e2e p95 (ms) | cola p50 | inferencia p50 | M2 entrega | perdidos | M3 PSI | n dets |
+|---|---|---|---|---|---|---|---|
+| w000 | 565.8 | 0.1 | 33.9 | 1.000 | 0 | 0.539 | 61 |
+| w001 | 46.2 | 0.1 | 35.6 | 1.000 | 0 | 0.549 | 77 |
+| w002 | 46.9 | 0.1 | 36.6 | 1.000 | 0 | — (insufficient) | 44 |
+| w003 | — | — | — | 1.000 | 0 | — (no_data) | 0 |
+| w004 | — | — | — | 1.000 | 0 | — (no_data) | 0 |
+| w005 | 48.1 | 0.1 | 39.5 | 1.000 | 0 | 0.375 | 136 |
+| w006 | 47.8 | 0.1 | 35.7 | 1.000 | 0 | 0.677 | 137 |
+| w007 | 45.8 | 0.1 | 38.0 | 1.000 | 0 | 0.087 | 163 |
+| w008 | 45.4 | 0.1 | 35.9 | 1.000 | 0 | 0.254 | 158 |
+| w009 | 46.4 | 0.1 | 37.3 | 1.000 | 0 | 0.105 | 134 |

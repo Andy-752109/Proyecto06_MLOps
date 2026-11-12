@@ -121,8 +121,8 @@ python scripts/recalc_metrics.py --run-id <id-s2>
 python scripts/verify_s2.py --run-id <id-s2> --c1 <id-c1> --c2 <id-c2>
 
 # 9) Adicionales M1–M3: métricas por ventana sobre las ejecuciones ya hechas + recálculo independiente
-python scripts/extra_metrics.py --run-id <id-referencia> --run-id <id-c1> --run-id <id-c2> --run-id <id-s1> --run-id <id-s2>
-python scripts/recalc_extra.py  --run-id <id-referencia> --run-id <id-c1> --run-id <id-c2> --run-id <id-s1> --run-id <id-s2>
+python scripts/extra_metrics.py --run-id <id-referencia> --run-id <id-c1> --run-id <id-c2> --run-id <id-s1> --run-id <id-s2> --run-id <id-s3>
+python scripts/recalc_extra.py  --run-id <id-referencia> --run-id <id-c1> --run-id <id-c2> --run-id <id-s1> --run-id <id-s2> --run-id <id-s3>
 
 # 10) Adicionales F2–F4: exportación, revisión de capturas y vista en vivo
 python scripts/verify_export.py --run-id <id-c2> --run-id <id-s1>

@@ -70,6 +70,18 @@ def main() -> None:
             check("m2_delivery_ratio", f"{rid}: sin corte ni saturación → entrega 1.0 en todas las ventanas",
                   "todas 1.0", sorted({x["value"] for x in series(rows, "m2_delivery_ratio")}),
                   all(x["value"] == 1.0 for x in series(rows, "m2_delivery_ratio")) and lost == 0 and not out_frames)
+        # S3 · un error de inferencia no es pérdida de frames ni latencia: M2 se mantiene y M1/G1 quedan sin datos
+        if (r["man"]["source"].get("fault_injection") or {}).get("inference_error"):
+            n_err = {w["window_id"]: w["n_errors"] for w in r["windows"]}
+            only_err = [w["window_id"] for w in r["windows"] if w["n_errors"] == w["n_events"]]
+            m1 = {x["window_id"]: x for x in series(rows, "m1_e2e_ms_p95")}
+            check("m2_delivery_ratio", f"{rid}: con {sum(n_err.values())} errores de inferencia la entrega sigue en 1.0",
+                  "1.0 también en las ventanas con errores",
+                  sorted({x["value"] for x in series(rows, "m2_delivery_ratio") if n_err[x["window_id"]]}),
+                  all(x["value"] == 1.0 for x in series(rows, "m2_delivery_ratio")))
+            check("m1_e2e_ms_p95", f"{rid}: ventanas solo con errores → M1 sin datos (no 0)",
+                  "no_data", sorted({m1[w]["status"] for w in only_err}),
+                  only_err and all(m1[w]["status"] == "no_data" and m1[w]["value"] is None for w in only_err))
 
     # M3 · caso controlado: en S2 las ventanas desenfocadas superan a todas las normales
     for rid, r in runs.items():

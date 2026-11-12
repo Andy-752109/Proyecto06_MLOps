@@ -45,6 +45,17 @@ por `run_id`, compartible por URL):
 eventos de la ventana). Cada franja enlaza a `/alertas/{id}` (eventos y capturas). El resumen
 enlaza a la ejecución, a sus alertas y a la configuración.
 
+**Condiciones del nivel 15 y dónde se cumplen.**
+
+| Condición de la rúbrica | Evidencia |
+|---|---|
+| Flujo compuesto | Selección de ejecuciones → gráficas G1–G7 → franja de alerta → `/alertas/{id}` → captura; punto → `/ventanas/{id}` → evento (`evidencias/tablero/01…04-*.png`) |
+| Integración adicional | Une cuatro tablas persistidas (`metric_values`, `windows`, `alerts`, `runs`) con la referencia (`config/reference.json`) y la comparabilidad por `config_ref`/`model_ref` |
+| Coordinación de estados | Elegible/insuficiente por ventana, `no_data` por métrica (✕, nunca 0), alerta abierta/resuelta, referencia comparable o no, grupos separados por configuración |
+| Persistencia | Lee SQLite; la selección vive en la URL y la API `/api/tablero` devuelve lo mismo |
+| Trazabilidad | Cada punto y franja enlaza a su ventana o alerta; 257 valores contrastados con los JSONL |
+| Caso normal y borde/fallo reproducibles | C1/C2 (normal), S1 (insuficientes y `no_data` reales), vacío, ejecución inexistente (404) y base ausente (503), en `verify_dashboard.py` y `tests/test_dashboard.py` |
+
 **Por qué se solicita el nivel 15.** Es un flujo compuesto que coordina varios estados
 persistidos: elegibilidad de ventana, `no_data` por métrica, ciclo de vida de alertas,
 comparabilidad de la referencia y agrupación por configuración/modelo. Además tiene caso
@@ -213,13 +224,26 @@ python scripts/verify_s2.py --run-id <id-s2> --c1 c1-normal-20261112T162444Z \
 
 Las definiciones M1–M5, los supuestos y los límites están en
 [`docs/metricas-adicionales.md`](docs/metricas-adicionales.md). Las tres métricas se calculan
-sobre las 5 ejecuciones (referencia, C1, C2, S1 y S2) a partir de los registros guardados,
+sobre 6 ejecuciones (referencia, C1, C2, S1, S2 y S3) a partir de los registros guardados,
 sin volver a correr nada. Código en el commit `381873b`.
 
+**Correspondencia con el catálogo de la guía.** Cada una es otra métrica del catálogo, distinta
+de la métrica base de su grupo:
+
+| Adicional | Renglón del catálogo | Métrica base del mismo grupo |
+|---|---|---|
+| M1 `m1_e2e_ms_p95` | G2 · "Latencia de extremo a extremo: captura hasta resultado" | G2 base: FPS de procesamiento (`g2_processing_fps`). G1 base mide otra etapa: solo la llamada al modelo |
+| M2 `m2_delivery_ratio` | G2 · "Frames descartados por la aplicación", ampliado a frames esperados que no llegaron por cualquier causa (descarte, corte), como proporción entregada | G2 base: FPS de procesamiento |
+| M3 `m3_score_psi` | G4 · "Distribución de confianza", comparada con la referencia | G4 base: proporción de baja confianza |
+
 - **Resultados y expectativas:** [`evidencias/metricas_adicionales/resumen.md`](evidencias/metricas_adicionales/resumen.md)
-  da 13 expectativas y 0 fallas. Los valores por ventana están en `<run_id>.jsonl`.
+  da 17 expectativas y 0 fallas. Los valores por ventana están en `<run_id>.jsonl`.
 - **Recálculo independiente:** [`evidencias/metricas_adicionales/recalculo.md`](evidencias/metricas_adicionales/recalculo.md)
-  se hace con pandas/numpy, sin importar el módulo, y da 150 comprobaciones y 0 diferencias.
+  se hace con pandas/numpy, sin importar el módulo, y da 180 comprobaciones y 0 diferencias.
+- **Separación de etapas con S3:** con 50 errores de inferencia, M2 sigue en 1.0 (los frames
+  llegaron) y M1 queda sin datos en las ventanas solo con errores, igual que G1. En S1 ocurre lo
+  contrario: M2 baja porque faltan frames. Así M1, M2 y G1 distinguen "no llegó el frame" de
+  "llegó pero el modelo no respondió".
 - **Pruebas:** `tests/test_extra_metrics.py` (5 pruebas con datos sintéticos).
 
 | ID | Por qué es distinta de la base | Nivel solicitado y justificación |
@@ -311,9 +335,16 @@ solo usan etiquetas verdaderas por construcción (las capturas de C2 vienen de l
 desenfocada). La nota de cada una lo declara. No son revisiones humanas. La base real
 `evidencias/revisiones.db` queda vacía para la autora.
 
-**Nivel 15.** Flujo compuesto que coordina estados: la revisión vigente frente al historial,
-la siguiente captura sin revisar y el resumen por alerta. Tiene persistencia propia,
-trazabilidad (evento, imagen y alertas) y casos normal, borde y fallo reproducibles.
+**Condiciones del nivel 15 y dónde se cumplen.**
+
+| Condición de la rúbrica | Evidencia |
+|---|---|
+| Flujo compuesto | Galería filtrada → captura con cajas → etiqueta y nota → "Guardar y siguiente sin revisar" → resumen en la alerta (`evidencias/revisiones/01…06-*.png`) |
+| Integración adicional | Une la base de monitoreo (solo lectura: eventos, imágenes, alertas) con una base propia de revisiones, y la API `POST /api/capturas/{id}/revision` |
+| Coordinación de estados | Revisión vigente frente a historial, siguiente sin revisar por ejecución, filtro por etiqueta vigente y resumen por alerta |
+| Persistencia | `revisiones.db` (registros de solo inserción, nunca se sobrescriben) |
+| Trazabilidad | Cada revisión guarda `event_id`, `run_id`, `image_ref` y las alertas del evento en ese momento |
+| Caso normal y borde/fallo reproducibles | Guardar y re-etiquetar (normal); sin etiqueta → 422, evento sin captura → 409, etiqueta desconocida → 422, evento inexistente → 404 (`demo_reviews.py`, 9/9; `tests/test_reviews.py`) |
 
 ## F4 · Vista en vivo del stream (`/en-vivo`)
 
@@ -399,6 +430,18 @@ Verificación: [`evidencias/escenarios/s3-error-inferencia.md`](evidencias/escen
 [`evidencias/recalculo/s3-error-inferencia-20261112T205403Z.md`](evidencias/recalculo/s3-error-inferencia-20261112T205403Z.md)
 (114 comprobaciones, 0 diferencias), pruebas `tests/test_inference_fault.py` y capturas
 `evidencias/escenarios/s3-*.png`.
+
+**Condiciones del nivel 10 y dónde se cumplen.**
+
+| Condición de la rúbrica | Evidencia (etapa en `s3-error-inferencia.md`) |
+|---|---|
+| Secuencia compuesta adicional | Antes → fallo → diagnóstico → reacción → recuperación → verificación posterior, 21 expectativas |
+| Fallo | 50 eventos `error` en los frames 500–599, con frame, modelo y detalle (etapa 2) |
+| Diagnóstico | `inference_failed`, capturas `error`, ventanas insuficientes, G1/G4/M1 sin datos, G5/G6 = 1.0, alerta en w004 (etapa 3) |
+| Reacción | 2 recargas del modelo con SHA-256 verificado (etapa 4) |
+| Recuperación | `inference_recovered` en el frame 600 y alerta resuelta en w005 (etapa 5) |
+| Verificación posterior | Ventanas 5–9 elegibles y 148 de 148 frames con las mismas puntuaciones que C1 (etapa 6) |
+| Evidencia reproducible de cada etapa | JSONL de la ejecución, línea de tiempo en `source_events.jsonl`, recálculo 0 diferencias, capturas `s3-*.png` |
 
 **Sin doble conteo.** La regla `evidencia-insuficiente-v1` es base y no se reclama; lo que se
 acredita es la secuencia fallo → diagnóstico → reacción → recuperación → verificación con una
