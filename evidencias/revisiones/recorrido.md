@@ -34,7 +34,7 @@ Generado con `python scripts/demo_reviews.py --c2 c2-baja-confianza-20261112T162
 |---|---|---|
 | `01-galeria-sin-revisar.png` | `/capturas?run_id=c2-baja-confianza-20261112T162525Z&review=sin_revisar` | Galería de capturas de C2 sin revisar |
 | `02-error-sin-etiqueta.png` | `/capturas/c2-baja-confianza-20261112T162525Z-e00000/revision` | Intento sin etiqueta: se rechaza (HTTP 422) y no se guarda nada |
-| `03-guardado-y-siguiente.png` | `/capturas/c2-baja-confianza-20261112T162525Z-e00003?guardado=1` | Tras guardar, el portal abre la siguiente captura sin revisar |
-| `04-historial.png` | `/capturas/c2-baja-confianza-20261112T162525Z-e00000?guardado=1` | La misma captura re-etiquetada: historial con 2 revisiones; vigente la última |
+| `03-guardado-y-siguiente.png` | `/capturas/c2-baja-confianza-20261112T162525Z-e00003?guardado=c2-baja-confianza-20261112T162525Z-e00000&etiqueta=imagen_degradada` | Tras guardar, el portal abre la siguiente captura sin revisar |
+| `04-historial.png` | `/capturas/c2-baja-confianza-20261112T162525Z-e00000?guardado=c2-baja-confianza-20261112T162525Z-e00000&etiqueta=dudosa` | La misma captura re-etiquetada: historial con 2 revisiones; vigente la última |
 | `05-alerta-con-revisiones.png` | `/alertas/c2-baja-confianza-20261112T162525Z-a01` | La alerta resume cuántas de sus capturas están revisadas y con qué etiqueta |
 | `06-galeria-filtrada.png` | `/capturas?run_id=c2-baja-confianza-20261112T162525Z&review=imagen_degradada` | Galería filtrada por etiqueta vigente imagen_degradada |

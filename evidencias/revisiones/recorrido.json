@@ -31,7 +31,7 @@
    "label": "imagen_degradada",
    "note": "Demostración automatizada del flujo: C2 usa la entrada desenfocada (sigma=7) por construcción; no es una revisión humana.",
    "reviewer": "demo-automatizada",
-   "created_at": "2026-11-12T20:55:26.825Z",
+   "created_at": "2026-11-12T21:31:18.500Z",
    "alert_ids": [
     "c2-baja-confianza-20261112T162525Z-a01",
     "c2-baja-confianza-20261112T162525Z-a02"
@@ -45,7 +45,7 @@
    "label": "imagen_degradada",
    "note": "Demostración automatizada del flujo: C2 usa la entrada desenfocada (sigma=7) por construcción; no es una revisión humana.",
    "reviewer": "demo-automatizada",
-   "created_at": "2026-11-12T20:55:27.502Z",
+   "created_at": "2026-11-12T21:31:19.177Z",
    "alert_ids": [
     "c2-baja-confianza-20261112T162525Z-a01",
     "c2-baja-confianza-20261112T162525Z-a02"
@@ -59,7 +59,7 @@
    "label": "imagen_degradada",
    "note": "Demostración automatizada del flujo: C2 usa la entrada desenfocada (sigma=7) por construcción; no es una revisión humana.",
    "reviewer": "demo-automatizada",
-   "created_at": "2026-11-12T20:55:28.113Z",
+   "created_at": "2026-11-12T21:31:19.787Z",
    "alert_ids": [
     "c2-baja-confianza-20261112T162525Z-a01",
     "c2-baja-confianza-20261112T162525Z-a02"
@@ -73,7 +73,7 @@
    "label": "imagen_degradada",
    "note": "Demostración automatizada del flujo: C2 usa la entrada desenfocada (sigma=7) por construcción; no es una revisión humana.",
    "reviewer": "demo-automatizada",
-   "created_at": "2026-11-12T20:55:28.725Z",
+   "created_at": "2026-11-12T21:31:20.398Z",
    "alert_ids": [
     "c2-baja-confianza-20261112T162525Z-a01",
     "c2-baja-confianza-20261112T162525Z-a02"
@@ -87,7 +87,7 @@
    "label": "dudosa",
    "note": "Re-etiquetado para demostrar el historial; la etiqueta vigente es la última.",
    "reviewer": "demo-automatizada",
-   "created_at": "2026-11-12T20:55:29.337Z",
+   "created_at": "2026-11-12T21:31:21.016Z",
    "alert_ids": [
     "c2-baja-confianza-20261112T162525Z-a01",
     "c2-baja-confianza-20261112T162525Z-a02"
@@ -205,12 +205,12 @@
   },
   {
    "png": "03-guardado-y-siguiente.png",
-   "url": "/capturas/c2-baja-confianza-20261112T162525Z-e00003?guardado=1",
+   "url": "/capturas/c2-baja-confianza-20261112T162525Z-e00003?guardado=c2-baja-confianza-20261112T162525Z-e00000&etiqueta=imagen_degradada",
    "what": "Tras guardar, el portal abre la siguiente captura sin revisar"
   },
   {
    "png": "04-historial.png",
-   "url": "/capturas/c2-baja-confianza-20261112T162525Z-e00000?guardado=1",
+   "url": "/capturas/c2-baja-confianza-20261112T162525Z-e00000?guardado=c2-baja-confianza-20261112T162525Z-e00000&etiqueta=dudosa",
    "what": "La misma captura re-etiquetada: historial con 2 revisiones; vigente la última"
   },
   {
