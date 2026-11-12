@@ -1,6 +1,6 @@
 # Índice de evidencias · Proyecto 6
 
-**Estudiante:** Andrea Lizeth Arévalo Solís (752109) · **Repositorio:** https://github.com/Andy-752109/Proyecto06_MLOps
+**Estudiante:** Andrea Lizeth Arevalo Solis (752109) · **Repositorio:** https://github.com/Andy-752109/Proyecto06_MLOps
 
 ## Revisiones Git y relación con las evidencias
 
