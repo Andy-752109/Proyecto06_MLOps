@@ -1,6 +1,6 @@
 # Vista en vivo (F4) · recorrido durante una ejecución real
 
-Generado con `python scripts/demo_live.py --scenario s1-interrupcion`. Ejecución `s1-interrupcion-20261112T185945Z` (commit `e244ed1`, git_dirty=False), lanzada con `--live`.
+Generado con `python scripts/demo_live.py --scenario s1-interrupcion`. Ejecución `s1-interrupcion-20261112T210253Z` (commit `3ad6c7c`, git_dirty=False), lanzada con `--live`.
 
 **6 comprobaciones, 0 fallas.**
 
@@ -9,10 +9,10 @@ Generado con `python scripts/demo_live.py --scenario s1-interrupcion`. Ejecució
 | t (s) | Estado | Último evento (seq) | Alertas abiertas |
 |---|---|---|---|
 | 0.0 | sin_ejecucion | — | — |
-| 2.03 | en_curso | 4 | — |
-| 12.06 | hueco_fuente | 54 | — |
-| 27.16 | en_curso | 130 | a01 |
-| 40.61 | terminada | 197 | — |
+| 2.04 | en_curso | 4 | — |
+| 12.07 | hueco_fuente | 54 | — |
+| 27.39 | en_curso | 131 | a01 |
+| 40.8 | terminada | 197 | — |
 
 ## Último estado publicado contra lo guardado por la ejecución
 

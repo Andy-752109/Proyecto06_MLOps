@@ -11,15 +11,17 @@
 | `0c66e90` | Agrega las ejecuciones C1/C2, el recálculo, las capturas del portal y este índice. **No cambia** `src/`, `config/`, `scripts/` ni `modelo/` | — |
 | `07e0e17` | Adicional S1 (cambia código) | `s1-interrupcion-20261112T175603Z` |
 | `257712f` | Adicional S2 (cambia código) | `s2-cambio-sostenido-20261112T181053Z` |
-| `e244ed1` | Adicionales F2–F4 (cambia código) | `s1-interrupcion-20261112T185945Z` (evidencia de la vista en vivo) |
+| `e244ed1` | Adicionales F2–F4 (cambia código) | — (su ejecución de la vista en vivo se reemplazó, ver `3ad6c7c`) |
 | `84b576a` | Adicional S3 (`619618b`), portal rediseñado y adicional F5 (cambian código) | `s3-error-inferencia-20261112T205403Z` |
+| `3ad6c7c` | Ajuste de estilo de la vista en vivo (cambia código) | `s1-interrupcion-20261112T210253Z` (evidencia de la vista en vivo, F4) |
 
 Las demás revisiones posteriores (F1, M1–M3 y correcciones menores) agregan código o
 evidencia, pero no generan ejecuciones nuevas; el detalle de cada adicional está en
 [`EXTRAS.md`](../EXTRAS.md). Tras rediseñar el portal (`84b576a`) se volvieron a ejecutar las
 verificaciones con capturas de pantalla (recorrido base, F1, F2, F3, S1, S2), así que sus
-imágenes muestran la interfaz actual con los mismos resultados (0 fallas). Las capturas de la
-vista en vivo (F4) son anteriores al rediseño: regenerarlas exige una ejecución nueva.
+imágenes muestran la interfaz actual con los mismos resultados (0 fallas). La vista en vivo (F4)
+se volvió a grabar con una ejecución nueva (`s1-interrupcion-20261112T210253Z`), que reemplaza a
+`s1-interrupcion-20261112T185945Z` (sigue en el historial de git, commit `7079ac9`).
 
 Cada `manifest.json` registra `git_commit` y `git_dirty`. Todas las ejecuciones versionadas
 tienen `git_dirty = false`, porque se hicieron con `src/ config/ scripts/ modelo/` sin cambios

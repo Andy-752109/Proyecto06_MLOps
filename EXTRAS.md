@@ -343,7 +343,7 @@ Sin `--live` el pipeline no escribe nada nuevo, así que C1, C2, S1 y S2 no camb
 
 **Verificación con una ejecución real.** `scripts/demo_live.py --scenario s1-interrupcion`
 levanta el portal, corre S1 con `--live`
-(`s1-interrupcion-20261112T185945Z`, commit `e244ed1`, `git_dirty=false`) y consulta
+(`s1-interrupcion-20261112T210253Z`, commit `3ad6c7c`, `git_dirty=false`; capturas con el portal rediseñado) y consulta
 `/api/en-vivo` cada 0.25 s.
 
 - **Secuencia de estados:** `sin_ejecucion → en_curso → hueco_fuente → en_curso → terminada`,
@@ -363,7 +363,7 @@ casos normal y de fallo reproducibles.
 
 **Sin doble conteo.**
 
-- La ejecución `s1-interrupcion-20261112T185945Z` solo es la evidencia de F4. El escenario
+- La ejecución `s1-interrupcion-20261112T210253Z` solo es la evidencia de F4. El escenario
   S1 se acredita con `s1-interrupcion-20261112T175603Z` y no se reclama otra vez.
 - F2, F3 y F4 son flujos distintos entre sí y distintos de las vistas base y del tablero F1.
 

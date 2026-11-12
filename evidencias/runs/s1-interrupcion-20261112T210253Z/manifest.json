@@ -1,10 +1,10 @@
 {
-  "run_id": "s1-interrupcion-20261112T185945Z",
+  "run_id": "s1-interrupcion-20261112T210253Z",
   "scenario": "s1-interrupcion",
   "description": "S1 · Interrupción y recuperación del stream: el tramo de C1 pierde la conexión en el frame 500 durante 15 s; la fuente reintenta cada 2 s y retoma en la posición en vivo.",
-  "started_at": "2026-11-12T18:59:46.515Z",
+  "started_at": "2026-11-12T21:02:54.448Z",
   "command": "'/Users/aarev/Documents/7mo semestre/IDC/Proyecto06_IDC/src/monitor/pipeline.py' --scenario s1-interrupcion --live",
-  "git_commit": "e244ed1d93fe0db58bc77d34a4328e8aa67aeecd",
+  "git_commit": "3ad6c7c7252f21ef53816aec7e9185613abad4a9",
   "git_dirty": false,
   "config_ref": "cfg-517d02606b3e",
   "config_file": "config/monitor.yaml",
@@ -43,15 +43,18 @@
     "device": "cpu"
   },
   "evaluate_rules": true,
+  "recovery": {
+    "reload_after_errors": 20
+  },
   "reference": {
     "path": "config/reference.json",
     "sha256": "4a67f430ccf542d08bd6fa318e9415949f6ed98807b133f7dc6db977f1f744a0",
     "low_prop": 0.182573
   },
-  "ended_at": "2026-11-12T19:00:26.060Z",
+  "ended_at": "2026-11-12T21:03:34.024Z",
   "status": "completed",
   "summary": {
-    "elapsed_s": 39.544,
+    "elapsed_s": 39.574,
     "source": {
       "native_fps": 10.0,
       "frames_read": 236,
@@ -90,7 +93,7 @@
     },
     "alerts": [
       {
-        "alert_id": "s1-interrupcion-20261112T185945Z-a01",
+        "alert_id": "s1-interrupcion-20261112T210253Z-a01",
         "rule_id": "evidencia-insuficiente-v1",
         "status": "resolved",
         "severity": "info"

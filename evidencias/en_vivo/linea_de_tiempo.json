@@ -1,5 +1,5 @@
 {
- "run_id": "s1-interrupcion-20261112T185945Z",
+ "run_id": "s1-interrupcion-20261112T210253Z",
  "timeline": [
   {
    "t": 0.0,
@@ -7,40 +7,40 @@
    "seq": null
   },
   {
-   "t": 2.03,
+   "t": 2.04,
    "health": "en_curso",
    "seq": 4,
    "alerts_open": []
   },
   {
-   "t": 12.06,
+   "t": 12.07,
    "health": "hueco_fuente",
    "seq": 54,
    "alerts_open": []
   },
   {
-   "t": 27.16,
+   "t": 27.39,
    "health": "en_curso",
-   "seq": 130,
+   "seq": 131,
    "alerts_open": [
     "a01"
    ]
   },
   {
-   "t": 40.61,
+   "t": 40.8,
    "health": "terminada",
    "seq": 197,
    "alerts_open": []
   }
  ],
  "final_status": {
-  "run_id": "s1-interrupcion-20261112T185945Z",
+  "run_id": "s1-interrupcion-20261112T210253Z",
   "scenario": "s1-interrupcion",
   "source_id": "video-vtest-01",
   "model_ref": "yolov8n@sha256:f59b3d833e2f",
   "config_ref": "cfg-517d02606b3e",
-  "started_at": "2026-11-12T18:59:46.515Z",
-  "updated_at": "2026-11-12T19:00:26.062Z",
+  "started_at": "2026-11-12T21:02:54.448Z",
+  "updated_at": "2026-11-12T21:03:34.026Z",
   "state": "finished",
   "policy": {
    "lower": 0.4,
@@ -48,21 +48,21 @@
   },
   "frame_seq": 197,
   "last_event": {
-   "event_id": "s1-interrupcion-20261112T185945Z-e00197",
+   "event_id": "s1-interrupcion-20261112T210253Z-e00197",
    "seq": 197,
    "status": "ok",
    "error": null,
    "frame_index": 794,
-   "captured_at": "2026-11-12T19:00:25.954Z",
+   "captured_at": "2026-11-12T21:03:33.919Z",
    "n_detections": 8,
    "n_low": 1,
    "n_doubt": 0,
    "n_accepted": 7,
    "max_score": 0.847659,
    "frame_zone": "accepted",
-   "inference_ms": 40.803,
-   "e2e_ms": 40.981,
-   "window_id": "s1-interrupcion-20261112T185945Z-w009",
+   "inference_ms": 28.495,
+   "e2e_ms": 28.605,
+   "window_id": "s1-interrupcion-20261112T210253Z-w009",
    "capture_reason": null,
    "detections": [
     {
@@ -148,7 +148,7 @@
    ]
   },
   "window": {
-   "window_id": "s1-interrupcion-20261112T185945Z-w010",
+   "window_id": "s1-interrupcion-20261112T210253Z-w010",
    "idx": 10,
    "n_events": 0,
    "size": 20,
@@ -159,7 +159,7 @@
    "min_detections": 30
   },
   "last_window": {
-   "window_id": "s1-interrupcion-20261112T185945Z-w009",
+   "window_id": "s1-interrupcion-20261112T210253Z-w009",
    "idx": 9,
    "state": "eligible",
    "low_prop": 0.104478,
@@ -183,12 +183,12 @@
     "outage": 159
    },
    "last_event": {
-    "ts": "2026-11-12T19:00:12.543Z",
+    "ts": "2026-11-12T21:03:20.490Z",
     "kind": "reconnected",
     "attempt": 8,
     "frame_index": 659,
     "frames_lost": 159,
-    "outage_s": 16.09
+    "outage_s": 16.073
    }
   }
  },
