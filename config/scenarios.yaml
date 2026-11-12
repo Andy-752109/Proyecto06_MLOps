@@ -91,3 +91,24 @@ s2-cambio-sostenido:
       sha256: d625c3a994235c08b13e2b77e4bcced4c281f6529910576dfc4c67fd68ad1861
       from_frame: 480          # inicio de la ventana 2 (20 frames procesados = 40 frames)
       to_frame: 720            # exclusivo: fin de la ventana 7
+
+s3-error-inferencia:
+  description: >-
+    S3 · Error de inferencia con reacción y recuperación: el tramo de C1 llega completo, pero
+    la llamada al modelo falla en los frames 500-599; el monitor recarga el modelo cada 20
+    errores consecutivos y verifica su SHA-256 hasta que la inferencia vuelve a responder.
+  evaluate_rules: true
+  source:
+    source_id: video-vtest-01
+    type: video_file
+    path: data/videos/vtest.avi
+    sha256: 45cddc9490be69345cbdab64ca583be65987e864ca408038e648db99e10516cf
+    playback: realtime
+    sample_every: 2
+    queue_maxsize: 4
+    start_frame: 400
+    end_frame: null
+    fault_injection:
+      inference_error:         # la fuente entrega los frames; falla la llamada al modelo
+        from_frame: 500        # 10 s después del inicio del tramo (inicio de la ventana 2 + 10 frames)
+        to_frame: 600          # exclusivo: 50 frames procesados con error

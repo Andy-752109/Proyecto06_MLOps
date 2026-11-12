@@ -24,6 +24,10 @@ from .source import SourceGap, VideoStreamSource, utc_now
 from .store import RunStore, connect
 
 
+class InjectedInferenceError(RuntimeError):
+    """Fallo de inferencia inyectado por el escenario (S3); no proviene del modelo."""
+
+
 def git_info() -> tuple[str | None, bool | None]:
     try:
         commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT,
@@ -74,6 +78,13 @@ class Monitor:
         self.live_dir = ROOT / self.cfg["storage"].get("live_dir", "evidencias/live") if live else None
         self.live_counts = {"events": 0, "ok": 0, "no_detections": 0, "error": 0, "source_gap": 0}
         self.last_frame_seq = None
+        # S3: fallo de inferencia inyectado y reacción (recarga del modelo)
+        self.inf_fault = (self.sc["source"].get("fault_injection") or {}).get("inference_error")
+        self.reload_after = (self.cfg.get("recovery") or {}).get("reload_after_errors")
+        self.consec_errors = 0
+        self.first_error = None
+        self.n_reloads = 0
+        self.detector_events: list[dict] = []
 
     # ---------------------------------------------------------------- run
     def run(self) -> dict:
@@ -98,7 +109,7 @@ class Monitor:
             "source_ref": sc["source_ref"], "source": sc["source"], "source_sha256": src_sha,
             "model_ref": self.detector.model_ref, "model_sha256": self.detector.sha256,
             "model_version": cfg["model"]["version"], "environment": self.detector.environment,
-            "evaluate_rules": sc["evaluate_rules"],
+            "evaluate_rules": sc["evaluate_rules"], "recovery": cfg.get("recovery"),
             "reference": ({"path": cfg["reference"]["path"], "sha256": file_sha256(ref_path),
                            "low_prop": self.reference["low_prop"]} if self.reference else None),
         }
@@ -169,12 +180,17 @@ class Monitor:
         event_id = f"{self.run_id}-e{seq:05d}"
         status, error, dets, inf_ms = "ok", None, [], None
         try:
+            f = self.inf_fault
+            if f and f["from_frame"] <= frame.frame_index < f["to_frame"]:
+                raise InjectedInferenceError(
+                    f"fallo inyectado en la llamada al modelo (frames {f['from_frame']}-{f['to_frame'] - 1})")
             dets, inf_ms = self.detector.predict(frame.image)
             if not dets:
                 status = "no_detections"
         except Exception as exc:  # fallo técnico: estado aparte, sin puntuación
             status, error = "error", f"{type(exc).__name__}: {exc}"
         done = time.perf_counter()
+        self._track_inference(status, frame.frame_index, event_id, error)
         summ = frame_summary(dets, cfg["policy"]["lower"], cfg["policy"]["upper"])
         if status == "error":
             summ.update(n_detections=0, max_score=None, frame_zone=None)
@@ -214,6 +230,34 @@ class Monitor:
         self.win_res.append({"run_id": self.run_id, "seq": seq, "event_id": event_id,
                              "ts": utc_now(), "rss_mb": round(mem, 3),
                              "cpu_percent": self.proc.cpu_percent(None)})
+
+    def _log_detector(self, kind: str, **detail) -> None:
+        self.detector_events.append({"ts": utc_now(), "kind": kind, **detail})
+
+    def _track_inference(self, status: str, frame_index: int, event_id: str, error: str | None) -> None:
+        """Diagnóstico y reacción ante errores consecutivos de inferencia."""
+        if status == "error":
+            self.consec_errors += 1
+            if self.consec_errors == 1:
+                self.first_error = time.perf_counter()
+                self._log_detector("inference_failed", frame_index=frame_index, event_id=event_id, error=error)
+            if self.reload_after and self.consec_errors % self.reload_after == 0:
+                self._reload_detector(frame_index)
+        elif self.consec_errors:
+            self._log_detector("inference_recovered", frame_index=frame_index, event_id=event_id,
+                               consecutive_errors=self.consec_errors, reloads=self.n_reloads,
+                               failing_s=round(time.perf_counter() - self.first_error, 3))
+            self.consec_errors = 0
+
+    def _reload_detector(self, frame_index: int) -> None:
+        """Reacción: vuelve a cargar el modelo desde disco y verifica que es el artefacto esperado."""
+        t0 = time.perf_counter()
+        self.detector = PersonDetector(self.cfg["model"], ROOT)
+        self.n_reloads += 1
+        self._log_detector("detector_reloaded", frame_index=frame_index, after_errors=self.consec_errors,
+                           load_ms=round((time.perf_counter() - t0) * 1000, 1),
+                           sha256=self.detector.sha256[:12],
+                           sha256_match=self.detector.sha256 == self.cfg["model"]["sha256"])
 
     def _publish_live(self, item, state: str = "running") -> None:
         """Escribe evidencias/live/{frame.jpg,status.json} de forma atómica (tmp + replace)."""
@@ -257,7 +301,7 @@ class Monitor:
             "alerts_total": len(self.alerts),
             "counts": self.live_counts,
             "source": {"gaps": st.gaps, "dropped": st.dropped,
-                       "last_event": st.events[-1] if st.events else None},
+                       "last_event": max(st.events + self.detector_events, key=lambda x: x["ts"], default=None)},
         }
         tmp = self.live_dir / "status.json.tmp"
         tmp.write_text(json.dumps(status, ensure_ascii=False))
@@ -363,6 +407,9 @@ class Monitor:
                        "read_failures": st.read_failures, "frames_selected": st.selected,
                        "dropped": st.dropped,
                        **({"gaps": st.gaps, "events": len(st.events)} if st.events or st.gaps else {})},
+            **({"inference": {"errors": sum(e["status"] == "error" for e in evs), "reloads": self.n_reloads,
+                              "recoveries": sum(d["kind"] == "inference_recovered" for d in self.detector_events)}}
+               if self.detector_events else {}),
             "events": len(evs),
             "by_status": {s: sum(e["status"] == s for e in evs)
                           for s in ("ok", "no_detections", "error") + (("source_gap",) if st.gaps else ())},
@@ -378,7 +425,8 @@ class Monitor:
             "alerts": [{"alert_id": a["alert_id"], "rule_id": a["rule_id"], "status": a["status"],
                         "severity": a["severity"]} for a in self.alerts.values()],
         }
-        for i, se in enumerate(st.events):
+        # eventos de la fuente y del detector en una sola línea de tiempo
+        for i, se in enumerate(sorted(st.events + self.detector_events, key=lambda x: x["ts"])):
             self.store.insert("source_events", {"run_id": self.run_id, "seq": i, "ts": se["ts"],
                                                 "kind": se["kind"],
                                                 "detail": {k: v for k, v in se.items() if k not in ("ts", "kind")}})
