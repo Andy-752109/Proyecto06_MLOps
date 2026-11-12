@@ -86,7 +86,7 @@ Valores leídos de <span class="mono">metric_values</span>, <span class="mono">w
 {% for b in bars %}<a href="/alertas/{{ b.alert_id }}"><title>{{ b.alert_id }} · {{ b.rule_id }} · {{ b.severity }} · {{ b.status }}
 ventanas {{ b.first_idx }}–{{ b.last_idx }} · abierta {{ b.opened_at }}{% if b.resolved_at %} · resuelta {{ b.resolved_at }}{% endif %}</title>
 <rect x="{{ '%.1f'|format(b.x) }}" y="3" width="{{ '%.1f'|format(b.w) }}" height="16" rx="4" class="badge s-{{ b.severity }}" style="fill:{% if b.severity == 'high' %}#922b21{% elif b.severity == 'warning' %}#c0392b{% else %}#2471a3{% endif %}"/>
-<text x="{{ '%.1f'|format(b.x + 5) }}" y="15" style="fill:#fff;font-weight:600">{{ b.alert_id.split('-')[-1] }} {{ b.status }}</text></a>{% endfor %}
+<text x="{{ '%.1f'|format(b.x + 5) }}" y="15" style="fill:#fff;font-weight:600">{{ b.alert_id.split('-')[-1] }}{% if b.w >= 90 %} {{ b.status }}{% endif %}</text></a>{% endfor %}
 </svg>{% endfor %}
 {% endfor %}
 <div class="muted" style="font-size:12px;margin-top:4px">Mismo eje horizontal (índice de ventana) que las gráficas. Cada franja enlaza a la alerta.</div>
