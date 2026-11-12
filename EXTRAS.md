@@ -10,6 +10,9 @@ informativos, y la regla `evidencia-insuficiente-v1`.
 | F1 | F (funcionalidad) | Tablero histórico por ventana: gráficas de las métricas base G1–G7 con comparación de ejecuciones | 15 | [`evidencias/tablero/verificacion.md`](evidencias/tablero/verificacion.md) |
 | S1 | S (escenario) | Interrupción del stream: corte de 15 s, diagnóstico por watchdog, reconexión con reintentos, recuperación y verificación posterior contra C1 | 10 | [`evidencias/escenarios/s1-interrupcion.md`](evidencias/escenarios/s1-interrupcion.md) |
 | S2 | S (escenario) | Cambio sostenido de confianza: normal → desenfocado → normal, con apertura y resolución de `cambio-sostenido-v1` | 8 | [`evidencias/escenarios/s2-cambio-sostenido.md`](evidencias/escenarios/s2-cambio-sostenido.md) |
+| F2 | F (funcionalidad) | Exportación de eventos a CSV/JSONL con los filtros de `/eventos` | 10 | [`evidencias/exportacion/verificacion.md`](evidencias/exportacion/verificacion.md) |
+| F3 | F (funcionalidad) | Revisión manual de capturas: galería, etiquetas con historial, resumen por alerta | 15 | [`evidencias/revisiones/recorrido.md`](evidencias/revisiones/recorrido.md) |
+| F4 | F (funcionalidad) | Vista en vivo del stream con cajas, ventana en curso, alertas abiertas y salud de la fuente | 15 | [`evidencias/en_vivo/recorrido.md`](evidencias/en_vivo/recorrido.md) |
 | M1 | M (métrica) | `m1_e2e_ms_p95`: p95 de la latencia de extremo a extremo por ventana (cola + inferencia + resto) | 5 | [`evidencias/metricas_adicionales/resumen.md`](evidencias/metricas_adicionales/resumen.md) |
 | M2 | M (métrica) | `m2_delivery_ratio`: frames entregados / esperados según `frame_index`, cruzada con watchdog y fuente | 8 | ídem |
 | M3 | M (métrica) | `m3_score_psi`: PSI de la distribución de puntuaciones de la ventana contra la referencia | 8 | ídem |
@@ -224,3 +227,136 @@ sin volver a correr nada. Código en el commit `381873b`.
 - Ninguna sustituye a la métrica base de su grupo.
 - El tablero F1 no las muestra; se entregan como datos y reporte propios.
 - Los escenarios S1 y S2 solo se usan como caso controlado y no se reclaman de nuevo.
+
+## F2 · Exportación de eventos (`/exportar/eventos.{csv,jsonl}`)
+
+**Qué hace.** Descarga todos los eventos que cumplen los mismos filtros que `/eventos`
+(ejecución, estado, zona del frame, solo con captura), sin paginar. La vista `/eventos`
+enlaza la descarga con los filtros activos.
+
+- Cada fila conserva la trazabilidad completa: `config_ref`, `model_ref`, `model_sha256`,
+  `window_id`, `image_ref`, tiempos y detecciones con puntuación, zona y caja.
+- Las cabeceras `X-Export-Count`, `X-Export-Filters`, `X-Export-Generated-At` y
+  `X-Export-Source` describen la descarga.
+
+**Verificación.** `scripts/verify_export.py` exporta 8 combinaciones de filtros en los dos
+formatos y las compara con los eventos esperados, calculados filtrando
+`evidencias/runs/*/events.jsonl` (no SQLite). Coinciden ids, orden, conteo y todos los
+campos.
+
+Los estados vacío y de error dan:
+
+| Caso | Respuesta |
+|---|---|
+| Formato no soportado | 404 |
+| Estado o zona desconocidos | 422 |
+| Ejecución inexistente | 404 |
+| Filtro válido sin resultados | 200 con solo el encabezado |
+
+Resultado: 13 de 13 comprobaciones. Incluye un ejemplo exportado y la descarga desde el
+navegador. Pruebas: `tests/test_portal.py::test_export_matches_query_and_rejects_bad_filters`.
+
+**Nivel 10.** Consulta parametrizada, persistencia pertinente (lee la base de monitoreo) y
+verificación de resultados y de estados vacíos y erróneos. No se pide 15: no coordina estados
+nuevos.
+
+**Corrección de la base hecha en el mismo commit.** Los enlaces de paginación de `/eventos`
+enviaban `captured=` vacío y respondían 422 si no se marcaba "solo con captura". Ahora
+omiten los filtros vacíos (`tests/test_portal.py::test_pagination_links_do_not_send_empty_filters`).
+No se reclama como adicional.
+
+## F3 · Revisión manual de capturas (`/capturas`)
+
+**Qué hace.**
+
+- **Galería** de capturas, filtrable por ejecución, motivo de captura y estado de revisión
+  (sin revisar o cada etiqueta).
+- **Página de revisión** con la imagen y sus cajas, y 5 etiquetas descriptivas: `confirma`,
+  `falso_positivo`, `omision`, `imagen_degradada` y `dudosa`. Lleva nota y nombre de quien
+  revisa, y el botón "Guardar y siguiente sin revisar".
+- **Historial**: cada revisión es un registro nuevo y la vigente es la más reciente.
+- **Resumen en la alerta**: cada alerta muestra cuántas de sus capturas están revisadas y
+  con qué etiqueta.
+- **API**: `GET /api/revisiones` y `POST /api/capturas/{id}/revision`.
+
+**Persistencia y trazabilidad.**
+
+- Base propia (`evidencias/revisiones.db`, o `REVIEW_DB`). La base de monitoreo sigue en solo
+  lectura.
+- Cada revisión guarda `event_id`, `run_id`, `image_ref` y las alertas del evento en ese
+  momento.
+- Las etiquetas describen lo que ve una persona; no se usan como métrica de calidad.
+
+**Verificación.** `scripts/demo_reviews.py` hace el flujo en Chromium sobre una base de
+demostración (`evidencias/revisiones/demo.db`):
+
+1. Intento sin etiqueta: se rechaza y no se guarda nada.
+2. Cuatro capturas de la alerta a01 de C2 con "Guardar y siguiente".
+3. Re-etiquetado de la primera, que deja un historial de 2 revisiones.
+4. Resumen en la alerta: "4 de 26".
+5. Galería filtrada por etiqueta.
+6. Por API: evento sin captura → 409, etiqueta desconocida → 422, evento inexistente → 404.
+
+Resultado: 9 de 9 comprobaciones. Pruebas: `tests/test_reviews.py`, con validaciones,
+historial y estado vigente.
+
+**Honestidad de la demostración.** Las revisiones van firmadas como `demo-automatizada` y
+solo usan etiquetas verdaderas por construcción (las capturas de C2 vienen de la entrada
+desenfocada). La nota de cada una lo declara. No son revisiones humanas. La base real
+`evidencias/revisiones.db` queda vacía para la autora.
+
+**Nivel 15.** Flujo compuesto que coordina estados: la revisión vigente frente al historial,
+la siguiente captura sin revisar y el resumen por alerta. Tiene persistencia propia,
+trazabilidad (evento, imagen y alertas) y casos normal, borde y fallo reproducibles.
+
+## F4 · Vista en vivo del stream (`/en-vivo`)
+
+**Qué hace.** `python -m monitor.pipeline --scenario … --live` publica en `evidencias/live/`
+el último frame y un `status.json`. La escritura es atómica (archivo temporal y `os.replace`)
+y se repite en cada evento, frame o hueco. El estado incluye:
+
+- último evento con sus detecciones;
+- ventana en curso y avance frente a los mínimos;
+- última ventana cerrada;
+- alertas abiertas;
+- conteos y descartes de la fuente.
+
+`/en-vivo` lo consulta cada 0.5 s, dibuja las cajas por zona y deriva la **salud**:
+
+| Salud | Cuándo |
+|---|---|
+| `en_curso` | Llegan frames |
+| `hueco_fuente` | El último evento es un `source_gap`; la imagen anterior queda velada |
+| `detenido` | Más de 3 s sin actualizaciones y sin haber terminado |
+| `terminada` | La ejecución terminó |
+| `sin_ejecucion` | No hay estado publicado |
+| `error` | El estado es ilegible |
+
+Sin `--live` el pipeline no escribe nada nuevo, así que C1, C2, S1 y S2 no cambian.
+`storage.live_dir` no forma parte de `config_ref`.
+
+**Verificación con una ejecución real.** `scripts/demo_live.py --scenario s1-interrupcion`
+levanta el portal, corre S1 con `--live`
+(`s1-interrupcion-20261112T185945Z`, commit `e244ed1`, `git_dirty=false`) y consulta
+`/api/en-vivo` cada 0.25 s.
+
+- **Secuencia de estados:** `sin_ejecucion → en_curso → hueco_fuente → en_curso → terminada`,
+  tal como se esperaba.
+- **Capturas:** 7 en total. Durante el corte se ve `evidencia-insuficiente-v1` abierta y,
+  tras la recuperación, la alerta sale de la lista.
+- **Último estado publicado frente a lo guardado:** coinciden eventos (198), huecos (80),
+  frames ok (118), alertas (1) y alertas abiertas (0).
+
+Resultado: 6 de 6 comprobaciones. Los estados `detenido` y `error` están en
+`tests/test_live.py` con estados sintéticos.
+
+**Nivel 15.** Integración adicional entre pipeline y portal mediante un estado publicado,
+coordinación de estados (salud derivada, ventana en curso, alertas abiertas), trazabilidad
+(enlaces a ejecución, ventana y alertas, y el estado final contrastado con lo guardado) y
+casos normal y de fallo reproducibles.
+
+**Sin doble conteo.**
+
+- La ejecución `s1-interrupcion-20261112T185945Z` solo es la evidencia de F4. El escenario
+  S1 se acredita con `s1-interrupcion-20261112T175603Z` y no se reclama otra vez.
+- F2, F3 y F4 son flujos distintos entre sí y distintos de las vistas base y del tablero F1.

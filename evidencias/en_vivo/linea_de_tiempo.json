@@ -1,0 +1,245 @@
+{
+ "run_id": "s1-interrupcion-20261112T185945Z",
+ "timeline": [
+  {
+   "t": 0.0,
+   "health": "sin_ejecucion",
+   "seq": null
+  },
+  {
+   "t": 2.03,
+   "health": "en_curso",
+   "seq": 4,
+   "alerts_open": []
+  },
+  {
+   "t": 12.06,
+   "health": "hueco_fuente",
+   "seq": 54,
+   "alerts_open": []
+  },
+  {
+   "t": 27.16,
+   "health": "en_curso",
+   "seq": 130,
+   "alerts_open": [
+    "a01"
+   ]
+  },
+  {
+   "t": 40.61,
+   "health": "terminada",
+   "seq": 197,
+   "alerts_open": []
+  }
+ ],
+ "final_status": {
+  "run_id": "s1-interrupcion-20261112T185945Z",
+  "scenario": "s1-interrupcion",
+  "source_id": "video-vtest-01",
+  "model_ref": "yolov8n@sha256:f59b3d833e2f",
+  "config_ref": "cfg-517d02606b3e",
+  "started_at": "2026-11-12T18:59:46.515Z",
+  "updated_at": "2026-11-12T19:00:26.062Z",
+  "state": "finished",
+  "policy": {
+   "lower": 0.4,
+   "upper": 0.7
+  },
+  "frame_seq": 197,
+  "last_event": {
+   "event_id": "s1-interrupcion-20261112T185945Z-e00197",
+   "seq": 197,
+   "status": "ok",
+   "error": null,
+   "frame_index": 794,
+   "captured_at": "2026-11-12T19:00:25.954Z",
+   "n_detections": 8,
+   "n_low": 1,
+   "n_doubt": 0,
+   "n_accepted": 7,
+   "max_score": 0.847659,
+   "frame_zone": "accepted",
+   "inference_ms": 40.803,
+   "e2e_ms": 40.981,
+   "window_id": "s1-interrupcion-20261112T185945Z-w009",
+   "capture_reason": null,
+   "detections": [
+    {
+     "score": 0.847659,
+     "zone": "accepted",
+     "bbox_xyxy": [
+      617.5,
+      266.8,
+      654.3,
+      376.9
+     ]
+    },
+    {
+     "score": 0.800085,
+     "zone": "accepted",
+     "bbox_xyxy": [
+      644.4,
+      232.8,
+      678.1,
+      338.0
+     ]
+    },
+    {
+     "score": 0.788764,
+     "zone": "accepted",
+     "bbox_xyxy": [
+      235.2,
+      191.2,
+      264.3,
+      263.2
+     ]
+    },
+    {
+     "score": 0.768397,
+     "zone": "accepted",
+     "bbox_xyxy": [
+      653.9,
+      145.2,
+      676.5,
+      215.8
+     ]
+    },
+    {
+     "score": 0.765648,
+     "zone": "accepted",
+     "bbox_xyxy": [
+      437.1,
+      275.0,
+      486.1,
+      381.1
+     ]
+    },
+    {
+     "score": 0.748787,
+     "zone": "accepted",
+     "bbox_xyxy": [
+      212.2,
+      156.9,
+      240.2,
+      228.0
+     ]
+    },
+    {
+     "score": 0.74861,
+     "zone": "accepted",
+     "bbox_xyxy": [
+      387.8,
+      163.1,
+      418.7,
+      234.1
+     ]
+    },
+    {
+     "score": 0.183418,
+     "zone": "low",
+     "bbox_xyxy": [
+      292.3,
+      185.8,
+      306.4,
+      209.0
+     ]
+    }
+   ]
+  },
+  "window": {
+   "window_id": "s1-interrupcion-20261112T185945Z-w010",
+   "idx": 10,
+   "n_events": 0,
+   "size": 20,
+   "n_valid": 0,
+   "n_dets": 0,
+   "n_low": 0,
+   "min_frames": 15,
+   "min_detections": 30
+  },
+  "last_window": {
+   "window_id": "s1-interrupcion-20261112T185945Z-w009",
+   "idx": 9,
+   "state": "eligible",
+   "low_prop": 0.104478,
+   "n_valid": 18,
+   "n_dets": 134
+  },
+  "alerts_open": [],
+  "alerts_total": 1,
+  "counts": {
+   "events": 198,
+   "ok": 118,
+   "no_detections": 0,
+   "error": 0,
+   "source_gap": 80
+  },
+  "source": {
+   "gaps": 80,
+   "dropped": {
+    "sampling": 118,
+    "saturation": 0,
+    "outage": 159
+   },
+   "last_event": {
+    "ts": "2026-11-12T19:00:12.543Z",
+    "kind": "reconnected",
+    "attempt": 8,
+    "frame_index": 659,
+    "frames_lost": 159,
+    "outage_s": 16.09
+   }
+  }
+ },
+ "checks": [
+  {
+   "what": "eventos publicados en vivo = eventos guardados",
+   "expected": 198,
+   "observed": 198,
+   "ok": true
+  },
+  {
+   "what": "huecos publicados = huecos guardados",
+   "expected": 80,
+   "observed": 80,
+   "ok": true
+  },
+  {
+   "what": "frames ok publicados = guardados",
+   "expected": 118,
+   "observed": 118,
+   "ok": true
+  },
+  {
+   "what": "alertas de la ejecución = alerts.jsonl",
+   "expected": 1,
+   "observed": 1,
+   "ok": true
+  },
+  {
+   "what": "alertas abiertas al final = abiertas en alerts.jsonl",
+   "expected": 0,
+   "observed": 0,
+   "ok": true
+  },
+  {
+   "what": "secuencia de estados de la vista",
+   "expected": [
+    "sin_ejecucion",
+    "en_curso",
+    "hueco_fuente",
+    "en_curso",
+    "terminada"
+   ],
+   "observed": [
+    "sin_ejecucion",
+    "en_curso",
+    "hueco_fuente",
+    "en_curso",
+    "terminada"
+   ],
+   "ok": true
+  }
+ ]
+}

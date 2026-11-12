@@ -1,0 +1,164 @@
+{
+ "checks": [
+  {
+   "filters": "(sin filtros)",
+   "expected": 1190,
+   "csv": 1190,
+   "jsonl": 1190,
+   "header_count": 1190,
+   "ids_ok": true,
+   "fields_ok": true,
+   "ok": true
+  },
+  {
+   "filters": {
+    "run_id": "c2-baja-confianza-20261112T162525Z"
+   },
+   "expected": 198,
+   "csv": 198,
+   "jsonl": 198,
+   "header_count": 198,
+   "ids_ok": true,
+   "fields_ok": true,
+   "ok": true
+  },
+  {
+   "filters": {
+    "run_id": "s1-interrupcion-20261112T175603Z"
+   },
+   "expected": 198,
+   "csv": 198,
+   "jsonl": 198,
+   "header_count": 198,
+   "ids_ok": true,
+   "fields_ok": true,
+   "ok": true
+  },
+  {
+   "filters": {
+    "run_id": "c2-baja-confianza-20261112T162525Z",
+    "zone": "low",
+    "captured": true
+   },
+   "expected": 13,
+   "csv": 13,
+   "jsonl": 13,
+   "header_count": 13,
+   "ids_ok": true,
+   "fields_ok": true,
+   "ok": true
+  },
+  {
+   "filters": {
+    "status": "no_detections"
+   },
+   "expected": 3,
+   "csv": 3,
+   "jsonl": 3,
+   "header_count": 3,
+   "ids_ok": true,
+   "fields_ok": true,
+   "ok": true
+  },
+  {
+   "filters": {
+    "status": "source_gap"
+   },
+   "expected": 160,
+   "csv": 160,
+   "jsonl": 160,
+   "header_count": 160,
+   "ids_ok": true,
+   "fields_ok": true,
+   "ok": true
+  },
+  {
+   "filters": {
+    "zone": "accepted",
+    "captured": true
+   },
+   "expected": 74,
+   "csv": 74,
+   "jsonl": 74,
+   "header_count": 74,
+   "ids_ok": true,
+   "fields_ok": true,
+   "ok": true
+  },
+  {
+   "filters": {
+    "run_id": "s1-interrupcion-20261112T175603Z",
+    "status": "source_gap"
+   },
+   "expected": 80,
+   "csv": 80,
+   "jsonl": 80,
+   "header_count": 80,
+   "ids_ok": true,
+   "fields_ok": true,
+   "ok": true
+  }
+ ],
+ "errors": [
+  {
+   "case": "formato no soportado",
+   "url": "/exportar/eventos.xml",
+   "params": {},
+   "expected": 404,
+   "status": 404,
+   "detail": "formato no soportado: usa .csv o .jsonl",
+   "ok": true
+  },
+  {
+   "case": "estado desconocido",
+   "url": "/exportar/eventos.csv",
+   "params": {
+    "status": "perdido"
+   },
+   "expected": 422,
+   "status": 422,
+   "detail": "estado desconocido 'perdido'; opciones: ok, no_detections, error, source_gap",
+   "ok": true
+  },
+  {
+   "case": "zona desconocida",
+   "url": "/exportar/eventos.csv",
+   "params": {
+    "zone": "media"
+   },
+   "expected": 422,
+   "status": 422,
+   "detail": "zona desconocida 'media'; opciones: low, doubt, accepted",
+   "ok": true
+  },
+  {
+   "case": "ejecución inexistente",
+   "url": "/exportar/eventos.jsonl",
+   "params": {
+    "run_id": "no-existe"
+   },
+   "expected": 404,
+   "status": 404,
+   "detail": "ejecución inexistente: no-existe",
+   "ok": true
+  },
+  {
+   "case": "filtro válido sin resultados",
+   "url": "/exportar/eventos.csv",
+   "params": {
+    "run_id": "c2-baja-confianza-20261112T162525Z",
+    "status": "error"
+   },
+   "expected": 200,
+   "status": 200,
+   "detail": "0 eventos; 1 línea (encabezado)",
+   "ok": true
+  }
+ ],
+ "shots": [
+  {
+   "png": "01-eventos-con-exportar.png",
+   "what": "Vista /eventos filtrada; el enlace CSV descargó «eventos-c2-baja-confianza-20261112T162525Z-low-captura.csv»"
+  }
+ ]
+}
